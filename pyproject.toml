@@ -1,7 +1,6 @@
 [project]
 name = "mlstep"
 version = "0.1"
-dependencies = ["torch"]
 authors = [
   {name = "Joe Wallwork", email="jw2423@cam.ac.uk" },
 ]
@@ -10,7 +9,22 @@ maintainers = [
 ]
 readme = "README.md"
 # TODO: license = { file = "LICENSE" }
+keywords = ["python", "machine-learning", "timstep"]
+classifiers = [
+	"Development Status :: 4 - Beta",
+	"Programming Language :: Python",
+]
+
+dependencies = ["torch"]
+[project.optional-dependencies]
+dev = ["ruff"]
 
 [project.urls]
 # TODO: Repository = "https://github.com/Cambridge-ICCS/mlstep"
 # TODO: Issues = "https://github.com/Cambridge-ICCS/mlstep/issues"
+
+[tool.setuptools]
+packages = ["mlstep"]
+
+[tool.ruff]
+line-length = 88
