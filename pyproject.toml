@@ -1,0 +1,16 @@
+[project]
+name = "mlstep"
+version = "0.1"
+dependencies = ["torch"]
+authors = [
+  {name = "Joe Wallwork", email="jw2423@cam.ac.uk" },
+]
+maintainers = [
+  {name = "Joe Wallwork", email="jw2423@cam.ac.uk" },
+]
+readme = "README.md"
+# TODO: license = { file = "LICENSE" }
+
+[project.urls]
+# TODO: Repository = "https://github.com/Cambridge-ICCS/mlstep"
+# TODO: Issues = "https://github.com/Cambridge-ICCS/mlstep/issues"
