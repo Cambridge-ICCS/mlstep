@@ -5,6 +5,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+__all__ = ["FCNN"]
+
 class FCNN(nn.Module):
     """
     FCNN with a single hidden layer and ReLU activation function that accepts a vector
