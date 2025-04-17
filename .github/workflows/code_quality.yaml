@@ -11,7 +11,7 @@ on:
   pull_request:
     paths:
       - '**.py'
-      - '.github/workflows/codequality.yml'
+      - '.github/workflows/code_quality.yaml'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -30,7 +30,8 @@ jobs:
     # Checks-out repository under $GITHUB_WORKSPACE, so job can access it
     - name: Checkout code
       with:
-        persist-credentials: false
+        token: ${{ secrets.REPO_ACCESS_TOKEN }}  # NOTE: required as private repo. Remove once public
+        persist-credentials: true
       uses: actions/checkout@v4
 
     - name: Install Python
