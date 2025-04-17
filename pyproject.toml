@@ -8,7 +8,7 @@ maintainers = [
   {name = "Joe Wallwork", email="jw2423@cam.ac.uk" },
 ]
 readme = "README.md"
-# TODO: license = { file = "LICENSE" }
+license = { file = "LICENSE" }
 keywords = ["python", "machine-learning", "timstep"]
 classifiers = [
 	"Development Status :: 4 - Beta",
@@ -20,8 +20,8 @@ dependencies = ["torch"]
 dev = ["ruff"]
 
 [project.urls]
-# TODO: Repository = "https://github.com/Cambridge-ICCS/mlstep"
-# TODO: Issues = "https://github.com/Cambridge-ICCS/mlstep/issues"
+Repository = "https://github.com/Cambridge-ICCS/mlstep"
+Issues = "https://github.com/Cambridge-ICCS/mlstep/issues"
 
 [tool.setuptools]
 packages = ["mlstep"]
