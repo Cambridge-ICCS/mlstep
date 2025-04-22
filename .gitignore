@@ -1,2 +1,8 @@
 mlstep.egg-info/
 __pycache__/
+data/
+plots/
+
+*.nc
+*.png
+*.pt
