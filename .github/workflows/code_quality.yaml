@@ -30,7 +30,7 @@ jobs:
     # Checks-out repository under $GITHUB_WORKSPACE, so job can access it
     - name: Checkout code
       with:
-        persist-credentials: true
+        persist-credentials: false
       uses: actions/checkout@v4
 
     - name: Install Python
