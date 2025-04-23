@@ -8,7 +8,7 @@ import torch
 from sklearn import model_selection
 
 from mlstep.net import FCNN
-from mlstep.train import propagate
+from mlstep.propagate import propagate
 
 # FIXME: Why are the first 705 values unset?
 istart = 705
