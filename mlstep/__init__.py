@@ -2,6 +2,6 @@
 
 from .data_utils import NetCDFDataLoader
 from .net import FCNN
-from .train import propagate
+from .propagate import propagate
 
 __all__ = ["propagate", "FCNN", "NetCDFDataLoader"]
