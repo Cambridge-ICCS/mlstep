@@ -34,17 +34,35 @@ max_nhsteps = int(target_data.max().item())
 print(f"{max_nhsteps=}")
 
 # Load the input data from file as Torch Tensors
-df_input = pd.read_csv("feature_data.csv")
+df_input = pd.read_csv("feature_data.csv", dtype=float)
 input_size = len(df_input.keys())
-zp = torch.Tensor(df_input["zp"][istart:].values)
-zt = torch.Tensor(df_input["zt"][istart:].values)
-zq = torch.Tensor(df_input["zq"][istart:].values)
-cldf = torch.Tensor(df_input["cldf"][istart:].values)
-cldl = torch.Tensor(df_input["cldl"][istart:].values)
-stratflag = torch.Tensor([1 if c == "T" else 0 for c in df_input["stratflag"][istart:]])
+stratflag = torch.Tensor(df_input["stratflag"][istart:]).to(dtype=torch.float)
+zp = torch.Tensor(df_input["zp"][istart:]).to(dtype=torch.float)
+zt = torch.Tensor(df_input["zt"][istart:]).to(dtype=torch.float)
+zq = torch.Tensor(df_input["zq"][istart:]).to(dtype=torch.float)
+cldf = torch.Tensor(df_input["cldf"][istart:]).to(dtype=torch.float)
+cldl = torch.Tensor(df_input["cldl"][istart:]).to(dtype=torch.float)
+zprt = [
+    torch.from_numpy(df_input[f"prt{j}"][istart:].values).to(dtype=torch.float)
+    for j in range(1, 61)
+]
+zdryrt = [
+    torch.from_numpy(df_input[f"dryrt{j}"][istart:].values).to(dtype=torch.float)
+    for j in range(1, 43)
+]
+zwetrt = [
+    torch.from_numpy(df_input[f"wetrt{j}"][istart:].values).to(dtype=torch.float)
+    for j in range(1, 35)
+]
+zftr = [
+    torch.from_numpy(df_input[f"ftr{j}"][istart:].values).to(dtype=torch.float)
+    for j in range(1, 88)
+]
 
 # Stack the input data arrays then normalise
-feature_data = torch.stack([zp, zt, zq, cldf, cldl, stratflag], dim=1)
+feature_data = torch.stack(
+    [zp, zt, zq, cldf, cldl, stratflag, *zprt, *zdryrt, *zwetrt, *zftr], dim=1
+)
 feature_data -= feature_data.min(0, keepdim=True)[0]
 feature_data /= feature_data.max(0, keepdim=True)[0]
 
@@ -61,11 +79,8 @@ validate_loader = torch.utils.data.DataLoader(
     validate_data, batch_size=test_batch_size, shuffle=False, num_workers=0
 )
 
-# TODO: Avoid this temporary hack
-input_size = 6
-
 # Setup model, optimiser, and loss function
-nn = FCNN(input_size, max_nhsteps=max_nhsteps).to(device)
+nn = FCNN(input_size, max_nhsteps=max_nhsteps).to(device, dtype=torch.float)
 # nn.train(True)
 optimizer = torch.optim.Adam(nn.parameters(), lr=lr)
 criterion = torch.nn.CrossEntropyLoss(reduction="sum")
