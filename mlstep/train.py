@@ -1,5 +1,7 @@
 """Module containing utilities for training ML models."""
 
+import torch
+
 __all__ = ["propagate"]
 
 
@@ -20,7 +22,8 @@ def propagate(data_loader, model, loss_fn, optimizer=None, device="cpu"):
     for x, y in data_loader:
         # Compute prediction and loss
         prediction = model(x.to(device))
-        loss = loss_fn(prediction, y.to(device))
+        target = y.to(device, dtype=torch.long)
+        loss = loss_fn(prediction, target)
         cumulative_loss += loss.item()
 
         # Backpropagation
