@@ -15,11 +15,11 @@ istart = 705
 
 # Set parameters
 test_size = 0.3
-batch_size = 50
+batch_size = 500
 test_batch_size = batch_size
 num_epochs = 10
 device = "cpu"
-lr = 1.0
+lr = 10.0
 
 # Set random state
 seed = 42
