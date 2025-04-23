@@ -1,5 +1,7 @@
 """Module containing utilities for training ML models."""
 
+import contextlib
+
 import torch
 
 __all__ = ["propagate"]
@@ -20,11 +22,18 @@ def propagate(data_loader, model, loss_fn, optimizer=None, device="cpu"):
     cumulative_loss = 0
 
     for x, y in data_loader:
+        # Configure the model for training or evaluation, as appropriate
+        if optimizer is None:
+            model.eval()
+        else:
+            model.train()
+
         # Compute prediction and loss
-        prediction = model(x.to(device))
-        target = y.to(device, dtype=torch.long)
-        loss = loss_fn(prediction, target)
-        cumulative_loss += loss.item()
+        with torch.no_grad() if optimizer is None else contextlib.nullcontext():
+            prediction = model(x.to(device))
+            target = y.to(device, dtype=torch.long)
+            loss = loss_fn(prediction, target)
+            cumulative_loss += loss.item()
 
         # Backpropagation
         if optimizer is not None:
