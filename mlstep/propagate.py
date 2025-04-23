@@ -1,4 +1,4 @@
-"""Module containing utilities for training ML models."""
+"""Module containing utilities for propagating data through ML models."""
 
 import contextlib
 
