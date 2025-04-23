@@ -1,4 +1,4 @@
-"""Script for training the ML model."""
+"""Script for training the ML model for the UKCA example."""
 
 import random
 from time import perf_counter
