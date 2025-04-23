@@ -68,8 +68,7 @@ input_size = 6
 nn = FCNN(input_size, max_nhsteps=max_nhsteps).to(device)
 # nn.train(True)
 optimizer = torch.optim.Adam(nn.parameters(), lr=lr)
-# TODO: Use a categorical loss function
-criterion = torch.nn.MSELoss(reduction="sum")
+criterion = torch.nn.CrossEntropyLoss(reduction="sum")
 
 # Train
 train_losses, validation_losses = [], []
