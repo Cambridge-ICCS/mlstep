@@ -3,15 +3,12 @@
 import random
 from time import perf_counter
 
-import pandas as pd
+import netCDF4
 import torch
 from sklearn import model_selection
 
 from mlstep.net import FCNN
 from mlstep.propagate import propagate
-
-# FIXME: Why are the first 705 values unset?
-istart = 705
 
 # Set parameters
 test_size = 0.3
@@ -27,42 +24,43 @@ random.seed(seed)
 torch.manual_seed(seed)
 torch.cuda.manual_seed_all(seed)
 
+# TODO: Account for all timesteps
+
 # Load the target data from file as Torch Tensors
-df_target = pd.read_csv("target_data.csv")
-target_data = torch.Tensor(df_target["nhsteps"][istart:].values)
+with netCDF4.Dataset("ncsteps_1.nc", "r") as nc_file:
+    ncsteps = torch.Tensor(nc_file.variables["ncsteps"][:])
+    target_data = torch.round(torch.log2(ncsteps)).to(dtype=torch.int)
 max_nhsteps = int(target_data.max().item())
 print(f"{max_nhsteps=}")
 
-# Load the input data from file as Torch Tensors
-df_input = pd.read_csv("feature_data.csv", dtype=float)
-input_size = len(df_input.keys())
-stratflag = torch.Tensor(df_input["stratflag"][istart:]).to(dtype=torch.float)
-zp = torch.Tensor(df_input["zp"][istart:]).to(dtype=torch.float)
-zt = torch.Tensor(df_input["zt"][istart:]).to(dtype=torch.float)
-zq = torch.Tensor(df_input["zq"][istart:]).to(dtype=torch.float)
-cldf = torch.Tensor(df_input["cldf"][istart:]).to(dtype=torch.float)
-cldl = torch.Tensor(df_input["cldl"][istart:]).to(dtype=torch.float)
-zprt = [
-    torch.from_numpy(df_input[f"prt{j}"][istart:].values).to(dtype=torch.float)
-    for j in range(1, 61)
-]
-zdryrt = [
-    torch.from_numpy(df_input[f"dryrt{j}"][istart:].values).to(dtype=torch.float)
-    for j in range(1, 43)
-]
-zwetrt = [
-    torch.from_numpy(df_input[f"wetrt{j}"][istart:].values).to(dtype=torch.float)
-    for j in range(1, 35)
-]
-zftr = [
-    torch.from_numpy(df_input[f"ftr{j}"][istart:].values).to(dtype=torch.float)
-    for j in range(1, 88)
-]
+# # Load the input data from file as Torch Tensors
+with netCDF4.Dataset("stratflag_1.nc", "r") as nc_file:
+    stratflag = torch.Tensor(nc_file.variables["stratflag"][:]).to(dtype=torch.float)
+with netCDF4.Dataset("zp_1.nc", "r") as nc_file:
+    zp = torch.Tensor(nc_file.variables["zp"][:]).to(dtype=torch.float)
+with netCDF4.Dataset("zt_1.nc", "r") as nc_file:
+    zt = torch.Tensor(nc_file.variables["zt"][:]).to(dtype=torch.float)
+with netCDF4.Dataset("zq_1.nc", "r") as nc_file:
+    zq = torch.Tensor(nc_file.variables["zq"][:]).to(dtype=torch.float)
+with netCDF4.Dataset("cldf_1.nc", "r") as nc_file:
+    cldf = torch.Tensor(nc_file.variables["cldf"][:]).to(dtype=torch.float)
+with netCDF4.Dataset("cldl_1.nc", "r") as nc_file:
+    cldl = torch.Tensor(nc_file.variables["cldl"][:]).to(dtype=torch.float)
+with netCDF4.Dataset("prt_1.nc", "r") as nc_file:
+    prt = torch.Tensor(nc_file.variables["prt"][:][:]).to(dtype=torch.float)
+with netCDF4.Dataset("dryrt_1.nc", "r") as nc_file:
+    dryrt = torch.Tensor(nc_file.variables["dryrt"][:][:]).to(dtype=torch.float)
+with netCDF4.Dataset("wetrt_1.nc", "r") as nc_file:
+    wetrt = torch.Tensor(nc_file.variables["wetrt"][:][:]).to(dtype=torch.float)
+with netCDF4.Dataset("ftr_1.nc", "r") as nc_file:
+    ftr = torch.Tensor(nc_file.variables["ftr"][:][:]).to(dtype=torch.float)
 
 # Stack the input data arrays then normalise
 feature_data = torch.stack(
-    [zp, zt, zq, cldf, cldl, stratflag, *zprt, *zdryrt, *zwetrt, *zftr], dim=1
+    [stratflag, zp, zt, zq, cldf, cldl, *prt, *dryrt, *wetrt, *ftr], dim=1
 )
+input_size = feature_data.shape[1]
+print(f"{input_size=}")
 feature_data -= feature_data.min(0, keepdim=True)[0]
 feature_data /= feature_data.max(0, keepdim=True)[0]
 
