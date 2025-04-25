@@ -59,6 +59,8 @@ with netCDF4.Dataset("ftr_1.nc", "r") as nc_file:
 feature_data = torch.stack(
     [stratflag, zp, zt, zq, cldf, cldl, *prt, *dryrt, *wetrt, *ftr], dim=1
 )
+tot_n_pnts = feature_data.shape[0]
+print(f"{tot_n_pnts=}")
 input_size = feature_data.shape[1]
 print(f"{input_size=}")
 feature_data -= feature_data.min(0, keepdim=True)[0]
