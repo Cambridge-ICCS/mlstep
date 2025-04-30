@@ -71,7 +71,7 @@ print(f"{tot_n_pnts=}")
 input_size = feature_data.shape[1]
 print(f"{input_size=}")
 feature_data -= feature_data.min(0, keepdim=True)[0]
-feature_data /= feature_data.max(0, keepdim=True)[0]
+feature_data /= torch.where(feature_data > 0, feature_data.max(0, keepdim=True)[0], 1)
 
 # Prepare training and validation data
 xtrain, xval, ytrain, yval = model_selection.train_test_split(
