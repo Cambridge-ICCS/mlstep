@@ -13,11 +13,11 @@ from mlstep.propagate import propagate
 
 # Set parameters
 test_size = 0.3
-batch_size = 500
+batch_size = 50
 test_batch_size = batch_size
-num_epochs = 10
+num_epochs = 100
 device = "cpu"
-lr = 10.0
+lr = 1.0
 
 # Set random state
 seed = 42
@@ -40,32 +40,53 @@ with netCDF4.Dataset(f"{data_dir}/ncsteps_1.nc", "r") as nc_file:
 max_nhsteps = int(target_data.max().item())
 print(f"{max_nhsteps=}")
 
-# # Load the input data from file as Torch Tensors
-with netCDF4.Dataset(f"{data_dir}/stratflag_1.nc", "r") as nc_file:
-    stratflag = torch.Tensor(nc_file.variables["stratflag"][:]).to(dtype=torch.float)
-with netCDF4.Dataset(f"{data_dir}/zp_1.nc", "r") as nc_file:
-    zp = torch.Tensor(nc_file.variables["zp"][:]).to(dtype=torch.float)
-with netCDF4.Dataset(f"{data_dir}/zt_1.nc", "r") as nc_file:
-    zt = torch.Tensor(nc_file.variables["zt"][:]).to(dtype=torch.float)
-with netCDF4.Dataset(f"{data_dir}/zq_1.nc", "r") as nc_file:
-    zq = torch.Tensor(nc_file.variables["zq"][:]).to(dtype=torch.float)
-with netCDF4.Dataset(f"{data_dir}/cldf_1.nc", "r") as nc_file:
-    cldf = torch.Tensor(nc_file.variables["cldf"][:]).to(dtype=torch.float)
-with netCDF4.Dataset(f"{data_dir}/cldl_1.nc", "r") as nc_file:
-    cldl = torch.Tensor(nc_file.variables["cldl"][:]).to(dtype=torch.float)
-with netCDF4.Dataset(f"{data_dir}/prt_1.nc", "r") as nc_file:
-    prt = torch.Tensor(nc_file.variables["prt"][:][:]).to(dtype=torch.float)
-with netCDF4.Dataset(f"{data_dir}/dryrt_1.nc", "r") as nc_file:
-    dryrt = torch.Tensor(nc_file.variables["dryrt"][:][:]).to(dtype=torch.float)
-with netCDF4.Dataset(f"{data_dir}/wetrt_1.nc", "r") as nc_file:
-    wetrt = torch.Tensor(nc_file.variables["wetrt"][:][:]).to(dtype=torch.float)
-with netCDF4.Dataset(f"{data_dir}/ftr_1.nc", "r") as nc_file:
-    ftr = torch.Tensor(nc_file.variables["ftr"][:][:]).to(dtype=torch.float)
+# TODO: Keep some of the zeros
+indices = target_data.nonzero()
+target_data = target_data[indices]
+target_data = target_data.reshape(target_data.shape[:-1])
+
+
+def load1d(variable, dtype=torch.float):
+    """
+    Load data corresponding to a 1D variable from a NetCDF file.
+
+    :param variable: Variable name to load.
+    :param dtype: Data type to use.
+    """
+    with netCDF4.Dataset(f"{data_dir}/{variable}_1.nc", "r") as nc_file:
+        arr = torch.Tensor(nc_file.variables[variable][:]).to(dtype=dtype)
+    return arr[indices]
+
+
+def load2d(variable, dtype=torch.float):
+    """
+    Load data corresponding to a 2D variable from a NetCDF file.
+
+    :param variable: Variable name to load.
+    :param dtype: Data type to use.
+    """
+    with netCDF4.Dataset(f"{data_dir}/{variable}_1.nc", "r") as nc_file:
+        arr = torch.Tensor(nc_file.variables[variable][:][:]).to(dtype=dtype)
+    return arr[:, indices]
+
+
+# Load the input data from file as Torch Tensors
+stratflag = load1d("stratflag")
+zp = load1d("zp")
+zt = load1d("zt")
+zq = load1d("zq")
+cldf = load1d("cldf")
+cldl = load1d("cldl")
+prt = load2d("prt")
+dryrt = load2d("dryrt")
+wetrt = load2d("wetrt")
+ftr = load2d("ftr")
 
 # Stack the input data arrays then normalise
 feature_data = torch.stack(
     [stratflag, zp, zt, zq, cldf, cldl, *prt, *dryrt, *wetrt, *ftr], dim=1
 )
+feature_data = feature_data.reshape(feature_data.shape[:-1])
 tot_n_pnts = feature_data.shape[0]
 print(f"{tot_n_pnts=}")
 input_size = feature_data.shape[1]
