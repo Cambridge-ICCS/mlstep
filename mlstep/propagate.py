@@ -41,6 +41,8 @@ def propagate(data_loader, model, loss_fn, optimizer=None, device="cpu"):
         # Backpropagation
         if is_training:
             loss.backward()
+            # print([p.grad.norm() for p in model.parameters()])
+            # FIXME: Why are so many of the gradients zero?
             optimizer.step()
 
     # Keep track of the number of wrong predictions

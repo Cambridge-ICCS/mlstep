@@ -88,7 +88,6 @@ validate_loader = torch.utils.data.DataLoader(
 
 # Setup model, optimiser, and loss function
 nn = FCNN(input_size, max_nhsteps=max_nhsteps).to(device, dtype=torch.float)
-# nn.train(True)
 optimizer = torch.optim.Adam(nn.parameters(), lr=lr)
 criterion = torch.nn.CrossEntropyLoss(reduction="sum")
 
