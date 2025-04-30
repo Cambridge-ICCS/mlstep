@@ -1,5 +1,7 @@
 """Script for plotting the loss function curves from the experiment."""
 
+import os
+
 import matplotlib.pyplot as plt
 import torch
 
@@ -9,4 +11,9 @@ axes.plot(torch.load("train_losses.pt"), "--x", label="Training")
 axes.plot(torch.load("validation_losses.pt"), ":o", label="Validation")
 axes.set_xlabel("Epochs")
 axes.set_ylabel("Cross entropy loss")
-plt.savefig("losses.png", bbox_inches="tight")
+
+# Create the plot directory (if it doesn't already exist) then save the plot
+plot_dir = "plots"
+if not os.path.exists(plot_dir):
+    os.makedirs(plot_dir)
+plt.savefig(f"{plot_dir}/losses.png", bbox_inches="tight")

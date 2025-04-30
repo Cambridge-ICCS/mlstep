@@ -1,5 +1,7 @@
 """Script for plotting proportions of halving steps in the training data."""
 
+import os
+
 import matplotlib.pyplot as plt
 import netCDF4
 import numpy as np
@@ -43,4 +45,8 @@ for bars, counts in zip(handles, plot_data):
             x, y = bar.get_xy()
             axes.text(x + 0.5 * width, y + 1.05 * height, label, ha="center")
 
-plt.savefig("target_data_hist.png", bbox_inches="tight")
+# Create the plot directory (if it doesn't already exist) then save the plot
+plot_dir = "plots"
+if not os.path.exists(plot_dir):
+    os.makedirs(plot_dir)
+plt.savefig(f"{plot_dir}/target_data_hist.png", bbox_inches="tight")
