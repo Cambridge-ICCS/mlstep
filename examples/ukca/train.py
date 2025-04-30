@@ -1,5 +1,6 @@
 """Script for training the ML model for the UKCA example."""
 
+import os
 import random
 from time import perf_counter
 
@@ -26,33 +27,39 @@ torch.cuda.manual_seed_all(seed)
 
 # TODO: Account for all timesteps
 
+# Check the data directory exists
+data_dir = "data"
+if not os.path.exists(data_dir):
+    errmsg = f"Data directory {data_dir} does not exist."
+    raise IOError(errmsg)
+
 # Load the target data from file as Torch Tensors
-with netCDF4.Dataset("ncsteps_1.nc", "r") as nc_file:
+with netCDF4.Dataset(f"{data_dir}/ncsteps_1.nc", "r") as nc_file:
     ncsteps = torch.Tensor(nc_file.variables["ncsteps"][:])
     target_data = torch.round(torch.log2(ncsteps)).to(dtype=torch.int)
 max_nhsteps = int(target_data.max().item())
 print(f"{max_nhsteps=}")
 
 # # Load the input data from file as Torch Tensors
-with netCDF4.Dataset("stratflag_1.nc", "r") as nc_file:
+with netCDF4.Dataset(f"{data_dir}/stratflag_1.nc", "r") as nc_file:
     stratflag = torch.Tensor(nc_file.variables["stratflag"][:]).to(dtype=torch.float)
-with netCDF4.Dataset("zp_1.nc", "r") as nc_file:
+with netCDF4.Dataset(f"{data_dir}/zp_1.nc", "r") as nc_file:
     zp = torch.Tensor(nc_file.variables["zp"][:]).to(dtype=torch.float)
-with netCDF4.Dataset("zt_1.nc", "r") as nc_file:
+with netCDF4.Dataset(f"{data_dir}/zt_1.nc", "r") as nc_file:
     zt = torch.Tensor(nc_file.variables["zt"][:]).to(dtype=torch.float)
-with netCDF4.Dataset("zq_1.nc", "r") as nc_file:
+with netCDF4.Dataset(f"{data_dir}/zq_1.nc", "r") as nc_file:
     zq = torch.Tensor(nc_file.variables["zq"][:]).to(dtype=torch.float)
-with netCDF4.Dataset("cldf_1.nc", "r") as nc_file:
+with netCDF4.Dataset(f"{data_dir}/cldf_1.nc", "r") as nc_file:
     cldf = torch.Tensor(nc_file.variables["cldf"][:]).to(dtype=torch.float)
-with netCDF4.Dataset("cldl_1.nc", "r") as nc_file:
+with netCDF4.Dataset(f"{data_dir}/cldl_1.nc", "r") as nc_file:
     cldl = torch.Tensor(nc_file.variables["cldl"][:]).to(dtype=torch.float)
-with netCDF4.Dataset("prt_1.nc", "r") as nc_file:
+with netCDF4.Dataset(f"{data_dir}/prt_1.nc", "r") as nc_file:
     prt = torch.Tensor(nc_file.variables["prt"][:][:]).to(dtype=torch.float)
-with netCDF4.Dataset("dryrt_1.nc", "r") as nc_file:
+with netCDF4.Dataset(f"{data_dir}/dryrt_1.nc", "r") as nc_file:
     dryrt = torch.Tensor(nc_file.variables["dryrt"][:][:]).to(dtype=torch.float)
-with netCDF4.Dataset("wetrt_1.nc", "r") as nc_file:
+with netCDF4.Dataset(f"{data_dir}/wetrt_1.nc", "r") as nc_file:
     wetrt = torch.Tensor(nc_file.variables["wetrt"][:][:]).to(dtype=torch.float)
-with netCDF4.Dataset("ftr_1.nc", "r") as nc_file:
+with netCDF4.Dataset(f"{data_dir}/ftr_1.nc", "r") as nc_file:
     ftr = torch.Tensor(nc_file.variables["ftr"][:][:]).to(dtype=torch.float)
 
 # Stack the input data arrays then normalise
@@ -106,6 +113,6 @@ for epoch in range(1, num_epochs + 1):
     )
     train_losses.append(train)
     validation_losses.append(val)
-torch.save(torch.Tensor(train_losses), "train_losses.pt")
-torch.save(torch.Tensor(validation_losses), "validation_losses.pt")
+torch.save(torch.Tensor(train_losses), f"{data_dir}/train_losses.pt")
+torch.save(torch.Tensor(validation_losses), f"{data_dir}/validation_losses.pt")
 torch.save(nn.state_dict(), "model.pt")

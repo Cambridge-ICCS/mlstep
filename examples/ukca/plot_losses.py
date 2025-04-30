@@ -5,10 +5,17 @@ import os
 import matplotlib.pyplot as plt
 import torch
 
+# Check the data directory exists
+data_dir = "data"
+if not os.path.exists(data_dir):
+    errmsg = f"Data directory {data_dir} does not exist."
+    raise IOError(errmsg)
+
+# Plot training and validation losses on the same axes
 fig, axes = plt.subplots()
 axes.grid()
-axes.plot(torch.load("train_losses.pt"), "--x", label="Training")
-axes.plot(torch.load("validation_losses.pt"), ":o", label="Validation")
+axes.plot(torch.load(f"{data_dir}/train_losses.pt"), "--x", label="Training")
+axes.plot(torch.load(f"{data_dir}/validation_losses.pt"), ":o", label="Validation")
 axes.set_xlabel("Epochs")
 axes.set_ylabel("Cross entropy loss")
 

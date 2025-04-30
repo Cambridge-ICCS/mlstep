@@ -9,10 +9,16 @@ import torch
 
 num_timesteps = 3
 
+# Check the data directory exists
+data_dir = "data"
+if not os.path.exists(data_dir):
+    errmsg = f"Data directory {data_dir} does not exist."
+    raise IOError(errmsg)
+
 # Load the target data from file as Torch Tensors
 target_data = []
 for i in range(1, num_timesteps + 1):
-    with netCDF4.Dataset(f"ncsteps_{i}.nc", "r") as nc_file:
+    with netCDF4.Dataset(f"{data_dir}/ncsteps_{i}.nc", "r") as nc_file:
         ncsteps = torch.Tensor(nc_file.variables["ncsteps"][:])
         target_data.append(torch.round(torch.log2(ncsteps)).to(dtype=torch.int))
 target_data = torch.vstack(target_data)
