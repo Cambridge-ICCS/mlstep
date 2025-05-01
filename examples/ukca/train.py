@@ -15,6 +15,7 @@ from mlstep.propagate import propagate
 test_size = 0.3
 batch_size = 50
 test_batch_size = batch_size
+hidden_size = 500
 num_epochs = 100
 device = "cpu"
 lr = 1.0
@@ -40,10 +41,18 @@ with netCDF4.Dataset(f"{data_dir}/ncsteps_1.nc", "r") as nc_file:
 max_nhsteps = int(target_data.max().item())
 print(f"{max_nhsteps=}")
 
-# TODO: Keep some of the zeros
-indices = target_data.nonzero()
+# Take the indices with non-zero targets and then the same number again of zero targets
+indices = [int(i) for i in target_data.nonzero()]
+N = 2 * len(indices)
+# assert len(target_data) > N
+i = 0
+while len(indices) < N:
+    if i not in indices:
+        indices.append(i)
+    i = i + 1
+indices.sort()
+indices = torch.Tensor(indices).to(dtype=torch.int)
 target_data = target_data[indices]
-target_data = target_data.reshape(target_data.shape[:-1])
 
 
 def load1d(variable, dtype=torch.float):
@@ -86,7 +95,6 @@ ftr = load2d("ftr")
 feature_data = torch.stack(
     [stratflag, zp, zt, zq, cldf, cldl, *prt, *dryrt, *wetrt, *ftr], dim=1
 )
-feature_data = feature_data.reshape(feature_data.shape[:-1])
 tot_n_pnts = feature_data.shape[0]
 print(f"{tot_n_pnts=}")
 input_size = feature_data.shape[1]
@@ -108,7 +116,8 @@ validate_loader = torch.utils.data.DataLoader(
 )
 
 # Setup model, optimiser, and loss function
-nn = FCNN(input_size, max_nhsteps=max_nhsteps).to(device, dtype=torch.float)
+nn = FCNN(input_size, max_nhsteps=max_nhsteps, hidden_size=hidden_size)
+nn = nn.to(device, dtype=torch.float)
 optimizer = torch.optim.Adam(nn.parameters(), lr=lr)
 criterion = torch.nn.CrossEntropyLoss(reduction="sum")
 
