@@ -19,14 +19,13 @@ hidden_size = 500
 num_epochs = 100
 device = "cpu"
 lr = 1.0
+num_timesteps = 3
 
 # Set random state
 seed = 42
 random.seed(seed)
 torch.manual_seed(seed)
 torch.cuda.manual_seed_all(seed)
-
-# TODO: Account for all timesteps
 
 # Check the data directory exists
 data_dir = "data"
@@ -35,9 +34,12 @@ if not os.path.exists(data_dir):
     raise IOError(errmsg)
 
 # Load the target data from file as Torch Tensors
-with netCDF4.Dataset(f"{data_dir}/ncsteps_1.nc", "r") as nc_file:
-    ncsteps = torch.Tensor(nc_file.variables["ncsteps"][:])
-    target_data = torch.round(torch.log2(ncsteps)).to(dtype=torch.int)
+target_data = []
+for i in range(1, num_timesteps + 1):
+    with netCDF4.Dataset(f"{data_dir}/ncsteps_{i}.nc", "r") as nc_file:
+        ncsteps = torch.Tensor(nc_file.variables["ncsteps"][:])
+        target_data.append(torch.round(torch.log2(ncsteps)).to(dtype=torch.int))
+target_data = torch.hstack(target_data)
 max_nhsteps = int(target_data.max().item())
 print(f"{max_nhsteps=}")
 
@@ -62,9 +64,11 @@ def load1d(variable, dtype=torch.float):
     :param variable: Variable name to load.
     :param dtype: Data type to use.
     """
-    with netCDF4.Dataset(f"{data_dir}/{variable}_1.nc", "r") as nc_file:
-        arr = torch.Tensor(nc_file.variables[variable][:]).to(dtype=dtype)
-    return arr[indices]
+    arr = []
+    for i in range(1, num_timesteps + 1):
+        with netCDF4.Dataset(f"{data_dir}/{variable}_{i}.nc", "r") as nc_file:
+            arr.append(torch.Tensor(nc_file.variables[variable][:]).to(dtype=dtype))
+    return torch.hstack(arr)[indices]
 
 
 def load2d(variable, dtype=torch.float):
@@ -74,9 +78,11 @@ def load2d(variable, dtype=torch.float):
     :param variable: Variable name to load.
     :param dtype: Data type to use.
     """
-    with netCDF4.Dataset(f"{data_dir}/{variable}_1.nc", "r") as nc_file:
-        arr = torch.Tensor(nc_file.variables[variable][:][:]).to(dtype=dtype)
-    return arr[:, indices]
+    arr = []
+    for i in range(1, num_timesteps + 1):
+        with netCDF4.Dataset(f"{data_dir}/{variable}_{i}.nc", "r") as nc_file:
+            arr.append(torch.Tensor(nc_file.variables[variable][:][:]).to(dtype=dtype))
+    return torch.hstack(arr)[:, indices]
 
 
 # Load the input data from file as Torch Tensors
