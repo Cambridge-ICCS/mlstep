@@ -1,6 +1,5 @@
 """Module containing neural network architectures."""
 
-import torch
 import torch.nn.functional as F
 from torch import nn
 
@@ -42,6 +41,4 @@ class FCNN(nn.Module):
 
         :param x: input vector for the model
         """
-        x = F.relu(self.hidden(x))
-        x = self.output(x)
-        return torch.argmax(F.softmax(x, dim=1), dim=1)
+        return F.softmax(self.output(F.relu(self.hidden(x))), dim=1)
