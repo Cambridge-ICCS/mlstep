@@ -34,7 +34,7 @@ def propagate(data_loader, model, loss_fn, optimizer=None, device="cpu"):
         # Compute prediction and loss
         with contextlib.nullcontext() if is_training else torch.no_grad():
             prediction = model(x.to(device))
-            target = y.to(device, dtype=torch.long)
+            target = y.to(device, dtype=torch.float)
             loss = loss_fn(prediction, target)
             cumulative_loss += loss.item()
 
