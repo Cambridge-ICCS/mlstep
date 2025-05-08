@@ -18,6 +18,7 @@ axes.plot(torch.load(f"{data_dir}/train_losses.pt"), "--x", label="Training")
 axes.plot(torch.load(f"{data_dir}/validation_losses.pt"), ":o", label="Validation")
 axes.set_xlabel("Epochs")
 axes.set_ylabel("Cross entropy loss")
+axes.legend()
 
 # Create the plot directory (if it doesn't already exist) then save the plot
 plot_dir = "plots"
