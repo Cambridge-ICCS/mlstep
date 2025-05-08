@@ -17,7 +17,7 @@ classifiers = [
 
 dependencies = ["torch"]
 [project.optional-dependencies]
-dev = ["ruff"]
+dev = ["pytest", "ruff"]
 
 [project.urls]
 Repository = "https://github.com/Cambridge-ICCS/mlstep"
