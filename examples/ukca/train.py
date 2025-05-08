@@ -1,6 +1,5 @@
 """Script for training the ML model for the UKCA example."""
 
-import os
 import random
 from time import perf_counter
 
@@ -8,10 +7,12 @@ import netCDF4
 import torch
 from sklearn import model_selection
 
+from mlstep.data_utils import load_nhsteps_data
 from mlstep.net import FCNN
 from mlstep.propagate import propagate
 
 # Set parameters
+data_dir = "data"
 test_size = 0.3
 batch_size = 50
 test_batch_size = batch_size
@@ -28,19 +29,8 @@ random.seed(seed)
 torch.manual_seed(seed)
 torch.cuda.manual_seed_all(seed)
 
-# Check the data directory exists
-data_dir = "data"
-if not os.path.exists(data_dir):
-    errmsg = f"Data directory {data_dir} does not exist."
-    raise IOError(errmsg)
-
-# Load the target data from file as Torch Tensors
-nhsteps = []
-for i in range(1, num_timesteps + 1):
-    with netCDF4.Dataset(f"{data_dir}/ncsteps_{i}.nc", "r") as nc_file:
-        ncsteps = torch.Tensor(nc_file.variables["ncsteps"][:])
-        nhsteps.append(torch.round(torch.log2(ncsteps)).to(dtype=torch.int))
-nhsteps = torch.hstack(nhsteps)
+# Load the target data from file
+nhsteps = load_nhsteps_data(num_timesteps, data_dir=data_dir)
 max_nhsteps = int(nhsteps.max().item())
 print(f"{max_nhsteps=}")
 target_data = torch.zeros((len(nhsteps), max_nhsteps + 1), dtype=torch.int)
