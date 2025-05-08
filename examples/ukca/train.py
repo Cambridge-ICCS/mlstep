@@ -15,10 +15,10 @@ from mlstep.propagate import propagate
 test_size = 0.3
 batch_size = 50
 test_batch_size = batch_size
-hidden_size = 500
+hidden_size = 600
 num_epochs = 100
 device = "cpu"
-lr = 1.0
+lr = 0.01
 num_timesteps = 3
 
 # Set random state
