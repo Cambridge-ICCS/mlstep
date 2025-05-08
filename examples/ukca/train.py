@@ -132,22 +132,22 @@ train_losses, validation_losses = [], []
 for epoch in range(1, num_epochs + 1):
     # Training step
     start_time = perf_counter()
-    train = propagate(train_loader, nn, criterion, optimizer, device=device)
+    train_loss = propagate(train_loader, nn, criterion, optimizer, device=device)
     mid_time = perf_counter()
     train_time = mid_time - start_time
 
     # Validation step
-    val = propagate(validate_loader, nn, criterion, device=device)
+    validation_loss = propagate(validate_loader, nn, criterion, device=device)
     validation_time = perf_counter() - mid_time
 
     # Stash progress
     print(
         f"Epoch {epoch:4d}/{num_epochs:d}"
-        f"  avg loss: {train:.4e} / {val:.4e}"
+        f"  avg loss: {train_loss:.4e} / {validation_loss:.4e}"
         f"  wallclock: {train_time:.2f}s / {validation_time:.2f}s"
     )
-    train_losses.append(train)
-    validation_losses.append(val)
+    train_losses.append(train_loss)
+    validation_losses.append(validation_loss)
 torch.save(torch.Tensor(train_losses), f"{data_dir}/train_losses.pt")
 torch.save(torch.Tensor(validation_losses), f"{data_dir}/validation_losses.pt")
 torch.save(nn.state_dict(), "model.pt")
