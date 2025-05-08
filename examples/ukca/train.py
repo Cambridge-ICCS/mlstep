@@ -20,6 +20,7 @@ num_epochs = 100
 device = "cpu"
 lr = 0.01
 num_timesteps = 3
+zero_factor = 3  # NOTE: This is a key parameter
 
 # Set random state
 seed = 42
@@ -48,8 +49,8 @@ for i, nhstep in enumerate(nhsteps):
 
 # Take the indices with non-zero targets and then the same number again of zero targets
 indices = [int(i) for i in nhsteps.nonzero()]
-N = 2 * len(indices)
-# assert len(target_data) > N
+N = (zero_factor + 1) * len(indices)
+assert len(target_data) > N
 i = 0
 while len(indices) < N:
     if i not in indices:
