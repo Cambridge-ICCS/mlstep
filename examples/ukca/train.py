@@ -151,6 +151,11 @@ for epoch in range(1, num_epochs + 1):
     )
     train_losses.append(train_loss)
     validation_losses.append(validation_loss)
+
+    # gradients = torch.tensor([p.grad.norm() for p in nn.parameters()])
+    # if gradients.allclose(torch.zeros_like(gradients)):
+    #     print("Terminating due to all gradients being zero.")
+    #     break
 torch.save(torch.Tensor(train_losses), f"{data_dir}/train_losses.pt")
 torch.save(torch.Tensor(validation_losses), f"{data_dir}/validation_losses.pt")
 torch.save(nn.state_dict(), "model.pt")
