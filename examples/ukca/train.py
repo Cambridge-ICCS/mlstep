@@ -55,6 +55,7 @@ while len(indices) < N:
     if i not in indices:
         indices.append(i)
     i = i + 1
+# indices = indices[N//2:]  # DEBUG (test we can map to zero)
 indices.sort()
 indices = torch.Tensor(indices).to(dtype=torch.int)
 target_data = target_data[indices]
