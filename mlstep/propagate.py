@@ -19,7 +19,7 @@ def propagate(data_loader, model, loss_fn, optimizer=None, device="cpu"):
     :param device: String denoting the device to run the computation on.
     """
     num_batches = len(data_loader)
-    cumulative_loss = 0
+    cumulative_loss = 0.0
 
     for x, y in data_loader:
         # Configure the model for training or evaluation, as appropriate
