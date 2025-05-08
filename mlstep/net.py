@@ -41,4 +41,4 @@ class FCNN(nn.Module):
 
         :param x: input vector for the model
         """
-        return F.softmax(self.output(F.relu(self.hidden(x))), dim=0)
+        return F.softmax(self.output(F.relu(self.hidden(x))), dim=1)

@@ -38,6 +38,8 @@ def propagate(data_loader, model, loss_fn, optimizer=None, device="cpu"):
             loss = loss_fn(prediction, target)
             cumulative_loss += loss.item()
 
+        # assert target.shape == prediction.shape
+
         # Backpropagation
         if is_training:
             loss.backward()

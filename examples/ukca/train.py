@@ -34,17 +34,20 @@ if not os.path.exists(data_dir):
     raise IOError(errmsg)
 
 # Load the target data from file as Torch Tensors
-target_data = []
+nhsteps = []
 for i in range(1, num_timesteps + 1):
     with netCDF4.Dataset(f"{data_dir}/ncsteps_{i}.nc", "r") as nc_file:
         ncsteps = torch.Tensor(nc_file.variables["ncsteps"][:])
-        target_data.append(torch.round(torch.log2(ncsteps)).to(dtype=torch.int))
-target_data = torch.hstack(target_data)
-max_nhsteps = int(target_data.max().item())
+        nhsteps.append(torch.round(torch.log2(ncsteps)).to(dtype=torch.int))
+nhsteps = torch.hstack(nhsteps)
+max_nhsteps = int(nhsteps.max().item())
 print(f"{max_nhsteps=}")
+target_data = torch.zeros((len(nhsteps), max_nhsteps + 1), dtype=torch.int)
+for i, nhstep in enumerate(nhsteps):
+    target_data[i, nhstep] = 1
 
 # Take the indices with non-zero targets and then the same number again of zero targets
-indices = [int(i) for i in target_data.nonzero()]
+indices = [int(i) for i in nhsteps.nonzero()]
 N = 2 * len(indices)
 # assert len(target_data) > N
 i = 0
@@ -125,7 +128,7 @@ validate_loader = torch.utils.data.DataLoader(
 nn = FCNN(input_size, max_nhsteps=max_nhsteps, hidden_size=hidden_size)
 nn = nn.to(device, dtype=torch.float)
 optimizer = torch.optim.Adam(nn.parameters(), lr=lr)
-criterion = torch.nn.CrossEntropyLoss(reduction="sum")
+criterion = torch.nn.CrossEntropyLoss()
 
 # Train
 train_losses, validation_losses = [], []
