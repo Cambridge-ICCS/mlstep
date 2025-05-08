@@ -5,7 +5,7 @@ import os
 import netCDF4
 import torch
 
-__all__ = ["load_nhsteps_data"]
+__all__ = ["load_nhsteps_data", "prepare_for_classification"]
 
 
 def load_nhsteps_data(num_timesteps, data_dir="data"):
@@ -26,3 +26,20 @@ def load_nhsteps_data(num_timesteps, data_dir="data"):
             nhsteps.append(torch.round(torch.log2(ncsteps)).to(dtype=torch.int))
     nhsteps = torch.hstack(nhsteps)
     return nhsteps
+
+
+def prepare_for_classification(nhsteps):
+    """
+    Prepare halving steps data for use in a classification problem.
+
+    This involves reformating as a binary matrix, where entry :math:`(i,j)` is one if
+    entry i of nhsteps takes the value :math:`2^j` and zero otherwise.
+
+    :param nhsteps: Tensor of halving steps data as rank-1 tensor.
+    :returns: Halving steps data in binary matrix format (rank-2).
+    """
+    max_nhsteps = int(nhsteps.max().item())
+    target_data = torch.zeros((len(nhsteps), max_nhsteps + 1), dtype=torch.int)
+    for i, nhstep in enumerate(nhsteps):
+        target_data[i, nhstep] = 1
+    return target_data

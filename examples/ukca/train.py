@@ -7,7 +7,7 @@ import netCDF4
 import torch
 from sklearn import model_selection
 
-from mlstep.data_utils import load_nhsteps_data
+from mlstep.data_utils import load_nhsteps_data, prepare_for_classification
 from mlstep.net import FCNN
 from mlstep.propagate import propagate
 
@@ -33,9 +33,7 @@ torch.cuda.manual_seed_all(seed)
 nhsteps = load_nhsteps_data(num_timesteps, data_dir=data_dir)
 max_nhsteps = int(nhsteps.max().item())
 print(f"{max_nhsteps=}")
-target_data = torch.zeros((len(nhsteps), max_nhsteps + 1), dtype=torch.int)
-for i, nhstep in enumerate(nhsteps):
-    target_data[i, nhstep] = 1
+target_data = prepare_for_classification(nhsteps)
 
 # Take the indices with non-zero targets and then the same number again of zero targets
 indices = [int(i) for i in nhsteps.nonzero()]
