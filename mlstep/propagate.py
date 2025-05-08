@@ -43,4 +43,6 @@ def propagate(data_loader, model, loss_fn, optimizer=None, device="cpu"):
             loss.backward()
             optimizer.step()
 
-    return cumulative_loss / num_batches
+    # Keep track of the number of wrong predictions
+    num_wrong = (prediction - target).abs().sum() / 2
+    return cumulative_loss / num_batches, 100 * num_wrong / num_batches
