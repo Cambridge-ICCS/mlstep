@@ -26,7 +26,7 @@ def propagate(data_loader, model, loss_fn, optimizer=None, device="cpu"):
         if optimizer is None:
             model.eval()
         else:
-            model.train()
+            model.train(True)
 
         # Compute prediction and loss
         with torch.no_grad() if optimizer is None else contextlib.nullcontext():
