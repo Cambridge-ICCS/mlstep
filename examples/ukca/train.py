@@ -135,19 +135,24 @@ train_losses, validation_losses = [], []
 for epoch in range(1, num_epochs + 1):
     # Training step
     start_time = perf_counter()
-    train_loss = propagate(train_loader, nn, criterion, optimizer, device=device)
+    train_loss, train_frac = propagate(
+        train_loader, nn, criterion, optimizer, device=device
+    )
     mid_time = perf_counter()
     train_time = mid_time - start_time
 
     # Validation step
-    validation_loss = propagate(validate_loader, nn, criterion, device=device)
+    validation_loss, validation_frac = propagate(
+        validate_loader, nn, criterion, device=device
+    )
     validation_time = perf_counter() - mid_time
 
     # Stash progress
     print(
         f"Epoch {epoch:4d}/{num_epochs:d}"
-        f"  avg loss: {train_loss:.4e} / {validation_loss:.4e}"
-        f"  wallclock: {train_time:.2f}s / {validation_time:.2f}s"
+        f"  avg loss: {train_loss:.4e} ({validation_loss:.4e})"
+        f"  incorrect: {train_frac:.2f}% ({validation_frac:.2f})%"
+        f"  wallclock: {train_time:.2f}s ({validation_time:.2f}s)"
     )
     train_losses.append(train_loss)
     validation_losses.append(validation_loss)
