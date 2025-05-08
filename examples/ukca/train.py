@@ -20,7 +20,7 @@ hidden_size = 600
 num_epochs = 1000
 device = "cpu"
 lr = 0.0001
-num_timesteps = 3
+num_timesteps = 10
 zero_factor = 3  # NOTE: This is a key parameter
 
 # Set random state

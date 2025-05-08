@@ -7,7 +7,7 @@ import numpy as np
 
 from mlstep.data_utils import load_nhsteps_data
 
-num_timesteps = 3
+num_timesteps = 10
 nhsteps = load_nhsteps_data(num_timesteps, data_dir="data")
 nhsteps = nhsteps.reshape(num_timesteps, -1)
 min_nhsteps = int(nhsteps.min().item())
