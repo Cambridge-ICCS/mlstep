@@ -14,8 +14,11 @@ if not os.path.exists(data_dir):
 # Plot training and validation losses on the same axes
 fig, axes = plt.subplots()
 axes.grid()
-axes.plot(torch.load(f"{data_dir}/train_losses.pt"), "--x", label="Training")
-axes.plot(torch.load(f"{data_dir}/validation_losses.pt"), ":o", label="Validation")
+train_losses = torch.load(f"{data_dir}/train_losses.pt")
+validation_losses = torch.load(f"{data_dir}/validation_losses.pt")
+x = torch.arange(1, len(train_losses) + 1)
+axes.loglog(x, train_losses, "--", label="Training")
+axes.loglog(x, validation_losses, ":", label="Validation")
 axes.set_xlabel("Epochs")
 axes.set_ylabel("Cross entropy loss")
 axes.legend()
