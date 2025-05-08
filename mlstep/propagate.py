@@ -21,24 +21,25 @@ def propagate(data_loader, model, loss_fn, optimizer=None, device="cpu"):
     num_batches = len(data_loader)
     cumulative_loss = 0.0
     is_training = optimizer is not None
+    if is_training:
+        model.train(True)
+    else:
+        model.eval()
 
     for x, y in data_loader:
         # Configure the model for training or evaluation, as appropriate
         if is_training:
-            model.train(True)
-        else:
-            model.eval()
+            optimizer.zero_grad()
 
         # Compute prediction and loss
-        with torch.no_grad() if optimizer is None else contextlib.nullcontext():
+        with contextlib.nullcontext() if is_training else torch.no_grad():
             prediction = model(x.to(device))
             target = y.to(device, dtype=torch.long)
             loss = loss_fn(prediction, target)
             cumulative_loss += loss.item()
 
         # Backpropagation
-        if not is_training:
-            optimizer.zero_grad()
+        if is_training:
             loss.backward()
             optimizer.step()
 
