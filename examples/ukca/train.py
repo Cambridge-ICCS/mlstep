@@ -60,6 +60,7 @@ while len(indices) < N:
 indices.sort()
 indices = torch.Tensor(indices).to(dtype=torch.int)
 target_data = target_data[indices]
+print(f"Number of data points: {target_data.shape[0]}")
 
 
 def load1d(variable, dtype=torch.float):
