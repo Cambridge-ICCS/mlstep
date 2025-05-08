@@ -37,7 +37,9 @@ for bars, counts in zip(handles, plot_data):
             label = f"{100.0 * count / N:.2f}%"
             width = bar.get_width()
             x, y = bar.get_xy()
-            axes.text(x + 0.5 * width, y + 1.05 * height, label, ha="center")
+            axes.text(
+                x + 0.5 * width, y + 1.2 * height, label, ha="center", rotation=90
+            )
 
 # Create the plot directory (if it doesn't already exist) then save the plot
 plot_dir = "plots"
