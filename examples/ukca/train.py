@@ -163,6 +163,9 @@ for epoch in range(1, num_epochs + 1):
     # if gradients.allclose(torch.zeros_like(gradients)):
     #     print("Terminating due to all gradients being zero.")
     #     break
-torch.save(torch.Tensor(train_losses), f"{data_dir}/train_losses.pt")
-torch.save(torch.Tensor(validation_losses), f"{data_dir}/validation_losses.pt")
-torch.save(nn.state_dict(), "model.pt")
+
+    # Save the model and loss progress perodically
+    if epoch % 100 == 0:
+        torch.save(torch.Tensor(train_losses), f"{data_dir}/train_losses.pt")
+        torch.save(torch.Tensor(validation_losses), f"{data_dir}/validation_losses.pt")
+        torch.save(nn.state_dict(), "model.pt")
