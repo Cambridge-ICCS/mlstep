@@ -16,9 +16,9 @@ test_size = 0.3
 batch_size = 50
 test_batch_size = batch_size
 hidden_size = 600
-num_epochs = 100
+num_epochs = 1000
 device = "cpu"
-lr = 0.01
+lr = 0.0001
 num_timesteps = 3
 zero_factor = 3  # NOTE: This is a key parameter
 
@@ -130,7 +130,7 @@ validate_loader = torch.utils.data.DataLoader(
 nn = FCNN(input_size, max_nhsteps=max_nhsteps, hidden_size=hidden_size)
 nn = nn.to(device, dtype=torch.float)
 optimizer = torch.optim.Adam(nn.parameters(), lr=lr)
-criterion = torch.nn.CrossEntropyLoss()
+criterion = torch.nn.CrossEntropyLoss(reduction="sum")
 
 # Train
 train_losses, validation_losses = [], []
