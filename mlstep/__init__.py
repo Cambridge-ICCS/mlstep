@@ -3,4 +3,4 @@
 from .net import FCNN
 from .propagate import propagate
 
-__all__ = ["propagate", "FCNN"]
+__all__ = ["FCNN", "propagate"]
