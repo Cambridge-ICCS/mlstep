@@ -5,7 +5,44 @@ import os
 import netCDF4
 import torch
 
-__all__ = ["load_nhsteps_data", "prepare_for_classification"]
+__all__ = [
+    "load_feature_data_1d",
+    "load_feature_data_2d",
+    "load_nhsteps_data",
+    "prepare_for_classification",
+]
+
+
+def load_feature_data_1d(variable, num_timesteps, dtype=torch.float, data_dir="data"):
+    """
+    Load feature data corresponding to a 1D variable from a NetCDF file.
+
+    :param variable: Variable name to load.
+    :param num_timesteps: Number of NetCDF files to load.
+    :param dtype: Data type to use.
+    :param data_dir: Directory where the NetCDF files are stored (defaults to "data").
+    """
+    arr = []
+    for i in range(1, num_timesteps + 1):
+        with netCDF4.Dataset(f"{data_dir}/{variable}_{i}.nc", "r") as nc_file:
+            arr.append(torch.Tensor(nc_file.variables[variable][:]).to(dtype=dtype))
+    return torch.hstack(arr)
+
+
+def load_feature_data_2d(variable, num_timesteps, dtype=torch.float, data_dir="data"):
+    """
+    Load feature data corresponding to a 2D variable from a NetCDF file.
+
+    :param variable: Variable name to load.
+    :param num_timesteps: Number of NetCDF files to load.
+    :param dtype: Data type to use.
+    :param data_dir: Directory where the NetCDF files are stored (defaults to "data").
+    """
+    arr = []
+    for i in range(1, num_timesteps + 1):
+        with netCDF4.Dataset(f"{data_dir}/{variable}_{i}.nc", "r") as nc_file:
+            arr.append(torch.Tensor(nc_file.variables[variable][:][:]).to(dtype=dtype))
+    return torch.hstack(arr)
 
 
 def load_nhsteps_data(num_timesteps, data_dir="data"):
@@ -24,8 +61,7 @@ def load_nhsteps_data(num_timesteps, data_dir="data"):
         with netCDF4.Dataset(f"{data_dir}/ncsteps_{i}.nc", "r") as nc_file:
             ncsteps = torch.Tensor(nc_file.variables["ncsteps"][:])
             nhsteps.append(torch.round(torch.log2(ncsteps)).to(dtype=torch.int))
-    nhsteps = torch.hstack(nhsteps)
-    return nhsteps
+    return torch.hstack(nhsteps)
 
 
 def prepare_for_classification(nhsteps):

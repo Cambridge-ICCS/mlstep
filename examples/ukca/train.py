@@ -3,11 +3,15 @@
 import random
 from time import perf_counter
 
-import netCDF4
 import torch
 from sklearn import model_selection
 
-from mlstep.data_utils import load_nhsteps_data, prepare_for_classification
+from mlstep.data_utils import (
+    load_feature_data_1d,
+    load_feature_data_2d,
+    load_nhsteps_data,
+    prepare_for_classification,
+)
 from mlstep.net import FCNN
 from mlstep.propagate import propagate
 
@@ -50,46 +54,17 @@ indices = torch.Tensor(indices).to(dtype=torch.int)
 target_data = target_data[indices]
 print(f"Number of data points: {target_data.shape[0]}")
 
-
-def load1d(variable, dtype=torch.float):
-    """
-    Load data corresponding to a 1D variable from a NetCDF file.
-
-    :param variable: Variable name to load.
-    :param dtype: Data type to use.
-    """
-    arr = []
-    for i in range(1, num_timesteps + 1):
-        with netCDF4.Dataset(f"{data_dir}/{variable}_{i}.nc", "r") as nc_file:
-            arr.append(torch.Tensor(nc_file.variables[variable][:]).to(dtype=dtype))
-    return torch.hstack(arr)[indices]
-
-
-def load2d(variable, dtype=torch.float):
-    """
-    Load data corresponding to a 2D variable from a NetCDF file.
-
-    :param variable: Variable name to load.
-    :param dtype: Data type to use.
-    """
-    arr = []
-    for i in range(1, num_timesteps + 1):
-        with netCDF4.Dataset(f"{data_dir}/{variable}_{i}.nc", "r") as nc_file:
-            arr.append(torch.Tensor(nc_file.variables[variable][:][:]).to(dtype=dtype))
-    return torch.hstack(arr)[:, indices]
-
-
 # Load the input data from file as Torch Tensors
-stratflag = load1d("stratflag")
-zp = load1d("zp")
-zt = load1d("zt")
-zq = load1d("zq")
-cldf = load1d("cldf")
-cldl = load1d("cldl")
-prt = load2d("prt")
-dryrt = load2d("dryrt")
-wetrt = load2d("wetrt")
-ftr = load2d("ftr")
+stratflag = load_feature_data_1d("stratflag", num_timesteps)[indices]
+zp = load_feature_data_1d("zp", num_timesteps)[indices]
+zt = load_feature_data_1d("zt", num_timesteps)[indices]
+zq = load_feature_data_1d("zq", num_timesteps)[indices]
+cldf = load_feature_data_1d("cldf", num_timesteps)[indices]
+cldl = load_feature_data_1d("cldl", num_timesteps)[indices]
+prt = load_feature_data_2d("prt", num_timesteps)[:, indices]
+dryrt = load_feature_data_2d("dryrt", num_timesteps)[:, indices]
+wetrt = load_feature_data_2d("wetrt", num_timesteps)[:, indices]
+ftr = load_feature_data_2d("ftr", num_timesteps)[:, indices]
 
 # Stack the input data arrays then normalise
 feature_data = torch.stack(
