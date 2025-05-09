@@ -6,7 +6,7 @@ from time import perf_counter
 import torch
 from sklearn import model_selection
 
-from mlstep.data_utils import NetCDFDataLoader, prepare_for_classification
+from mlstep.data_utils import NetCDFDataLoader
 from mlstep.net import FCNN
 from mlstep.propagate import propagate
 
@@ -34,12 +34,12 @@ data_dir = "data"
 ncloader = NetCDFDataLoader(
     features_1d, features_2d, num_timesteps, zero_factor=zero_factor, data_dir=data_dir
 )
-nhsteps = ncloader.load_nhsteps_data()
+target_data = ncloader.load_nhsteps_data()
 max_nhsteps = ncloader.max_nhsteps
 print(f"{max_nhsteps=}")
-target_data = prepare_for_classification(nhsteps)
 print(f"Number of data points: {target_data.shape[0]}")
 feature_data = ncloader.load_feature_data()
+assert target_data.shape[0] == feature_data.shape[0]
 print(f"Number of scalar features: {feature_data.shape[1]}")
 
 # Normalise the feature data
