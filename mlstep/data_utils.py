@@ -35,7 +35,7 @@ class NetCDFDataLoader:
         self._indices = None
         self._max_nhsteps = None
 
-    def subsample_indices(self, nhsteps):
+    def _subsample_indices(self, nhsteps):
         """
         Subsample the indices to reduce the number of data points.
 
@@ -65,7 +65,7 @@ class NetCDFDataLoader:
         :returns: The indices of the subsampled data.
         """
         if self._indices is None:
-            errmsg = "Indices have not been set. Call subsample_indices() first."
+            errmsg = "Indices have not been set. Call load_target_data first."
             raise RuntimeError(errmsg)
         return self._indices
 
@@ -78,7 +78,7 @@ class NetCDFDataLoader:
         """
         if self._max_nhsteps is None:
             errmsg = (
-                "Max halving steps have not been set. Call load_nhsteps_data() first."
+                "Max halving steps have not been set. Call load_target_data() first."
             )
             raise RuntimeError(errmsg)
         return self._max_nhsteps
@@ -99,7 +99,7 @@ class NetCDFDataLoader:
             target_data[i, nhstep] = 1
         return target_data
 
-    def load_nhsteps_data(self):
+    def load_target_data(self):
         """
         Load halving steps data from netCDF files.
 
@@ -117,7 +117,7 @@ class NetCDFDataLoader:
                 ncsteps = torch.Tensor(nc.variables["ncsteps"][:])
                 nhsteps.append(torch.round(torch.log2(ncsteps)).to(dtype=torch.int))
         nhsteps = torch.hstack(nhsteps)
-        self.subsample_indices(nhsteps)
+        self._subsample_indices(nhsteps)
         self._max_nhsteps = int(nhsteps.max().item())
         nhsteps = nhsteps[self.indices]
         return self._prepare_for_classification(nhsteps)

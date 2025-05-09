@@ -34,7 +34,7 @@ data_dir = "data"
 ncloader = NetCDFDataLoader(
     features_1d, features_2d, num_timesteps, zero_factor=zero_factor, data_dir=data_dir
 )
-target_data = ncloader.load_nhsteps_data()
+target_data = ncloader.load_target_data()
 max_nhsteps = ncloader.max_nhsteps
 print(f"{max_nhsteps=}")
 print(f"Number of data points: {target_data.shape[0]}")
