@@ -50,22 +50,21 @@ indices = torch.Tensor(indices).to(dtype=torch.int)
 target_data = target_data[indices]
 print(f"Number of data points: {target_data.shape[0]}")
 
-# Load the input data from file as Torch Tensors
-stratflag = ncloader.load_feature_data_1d("stratflag")[indices]
-zp = ncloader.load_feature_data_1d("zp")[indices]
-zt = ncloader.load_feature_data_1d("zt")[indices]
-zq = ncloader.load_feature_data_1d("zq")[indices]
-cldf = ncloader.load_feature_data_1d("cldf")[indices]
-cldl = ncloader.load_feature_data_1d("cldl")[indices]
-prt = ncloader.load_feature_data_2d("prt")[:, indices]
-dryrt = ncloader.load_feature_data_2d("dryrt")[:, indices]
-wetrt = ncloader.load_feature_data_2d("wetrt")[:, indices]
-ftr = ncloader.load_feature_data_2d("ftr")[:, indices]
+# Load the feature data from file as Torch Tensors and stack
+features_1d = ["stratflag", "zp", "zt", "zq", "cldf", "cldl"]
+feature_data_1d = [
+    features[indices] for features in ncloader.load_feature_data_1d(*features_1d)
+]
+features_2d = ["prt", "dryrt", "wetrt", "ftr"]
+feature_data_2d = [
+    features[:, indices] for features in ncloader.load_feature_data_2d(*features_2d)
+]
+feature_data = feature_data_1d
+for features in feature_data_2d:
+    feature_data += features
+feature_data = torch.stack(feature_data, dim=1)
 
-# Stack the input data arrays then normalise
-feature_data = torch.stack(
-    [stratflag, zp, zt, zq, cldf, cldl, *prt, *dryrt, *wetrt, *ftr], dim=1
-)
+# Normalise the feature data
 tot_n_pnts = feature_data.shape[0]
 print(f"{tot_n_pnts=}")
 input_size = feature_data.shape[1]

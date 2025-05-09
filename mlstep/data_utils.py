@@ -25,31 +25,39 @@ class NetCDFDataLoader:
             raise IOError(errmsg)
         self.data_dir = data_dir
 
-    def load_feature_data_1d(self, variable, dtype=torch.float):
+    def load_feature_data_1d(self, *variables, dtype=torch.float):
         """
-        Load feature data corresponding to a 1D variable from a NetCDF file.
+        Load feature data corresponding to 1D variable from NetCDF files.
+
+        :param variables: Variable names to load.
+        :param dtype: Data type to use.
+        """
+        data = []
+        for variable in variables:
+            arr = []
+            for i in range(1, self.num_timesteps + 1):
+                with netCDF4.Dataset(f"{self.data_dir}/{variable}_{i}.nc", "r") as nc:
+                    arr.append(torch.Tensor(nc.variables[variable][:]).to(dtype=dtype))
+            data.append(torch.hstack(arr))
+        return data
+
+    def load_feature_data_2d(self, *variables, dtype=torch.float):
+        """
+        Load feature data corresponding to 2D variables from NetCDF files.
 
         :param variable: Variable name to load.
         :param dtype: Data type to use.
         """
-        arr = []
-        for i in range(1, self.num_timesteps + 1):
-            with netCDF4.Dataset(f"{self.data_dir}/{variable}_{i}.nc", "r") as nc:
-                arr.append(torch.Tensor(nc.variables[variable][:]).to(dtype=dtype))
-        return torch.hstack(arr)
-
-    def load_feature_data_2d(self, variable, dtype=torch.float):
-        """
-        Load feature data corresponding to a 2D variable from a NetCDF file.
-
-        :param variable: Variable name to load.
-        :param dtype: Data type to use.
-        """
-        arr = []
-        for i in range(1, self.num_timesteps + 1):
-            with netCDF4.Dataset(f"{self.data_dir}/{variable}_{i}.nc", "r") as nc:
-                arr.append(torch.Tensor(nc.variables[variable][:][:]).to(dtype=dtype))
-        return torch.hstack(arr)
+        data = []
+        for variable in variables:
+            arr = []
+            for i in range(1, self.num_timesteps + 1):
+                with netCDF4.Dataset(f"{self.data_dir}/{variable}_{i}.nc", "r") as nc:
+                    arr.append(
+                        torch.Tensor(nc.variables[variable][:][:]).to(dtype=dtype)
+                    )
+            data.append(torch.stack(arr))
+        return data
 
     def load_nhsteps_data(self):
         """
