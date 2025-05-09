@@ -6,12 +6,7 @@ from time import perf_counter
 import torch
 from sklearn import model_selection
 
-from mlstep.data_utils import (
-    load_feature_data_1d,
-    load_feature_data_2d,
-    load_nhsteps_data,
-    prepare_for_classification,
-)
+from mlstep.data_utils import NetCDFDataLoader, prepare_for_classification
 from mlstep.net import FCNN
 from mlstep.propagate import propagate
 
@@ -34,7 +29,8 @@ torch.manual_seed(seed)
 torch.cuda.manual_seed_all(seed)
 
 # Load the target data from file
-nhsteps = load_nhsteps_data(num_timesteps, data_dir=data_dir)
+ncloader = NetCDFDataLoader(num_timesteps, data_dir=data_dir)
+nhsteps = ncloader.load_nhsteps_data()
 max_nhsteps = int(nhsteps.max().item())
 print(f"{max_nhsteps=}")
 target_data = prepare_for_classification(nhsteps)
@@ -55,16 +51,16 @@ target_data = target_data[indices]
 print(f"Number of data points: {target_data.shape[0]}")
 
 # Load the input data from file as Torch Tensors
-stratflag = load_feature_data_1d("stratflag", num_timesteps)[indices]
-zp = load_feature_data_1d("zp", num_timesteps)[indices]
-zt = load_feature_data_1d("zt", num_timesteps)[indices]
-zq = load_feature_data_1d("zq", num_timesteps)[indices]
-cldf = load_feature_data_1d("cldf", num_timesteps)[indices]
-cldl = load_feature_data_1d("cldl", num_timesteps)[indices]
-prt = load_feature_data_2d("prt", num_timesteps)[:, indices]
-dryrt = load_feature_data_2d("dryrt", num_timesteps)[:, indices]
-wetrt = load_feature_data_2d("wetrt", num_timesteps)[:, indices]
-ftr = load_feature_data_2d("ftr", num_timesteps)[:, indices]
+stratflag = ncloader.load_feature_data_1d("stratflag")[indices]
+zp = ncloader.load_feature_data_1d("zp")[indices]
+zt = ncloader.load_feature_data_1d("zt")[indices]
+zq = ncloader.load_feature_data_1d("zq")[indices]
+cldf = ncloader.load_feature_data_1d("cldf")[indices]
+cldl = ncloader.load_feature_data_1d("cldl")[indices]
+prt = ncloader.load_feature_data_2d("prt")[:, indices]
+dryrt = ncloader.load_feature_data_2d("dryrt")[:, indices]
+wetrt = ncloader.load_feature_data_2d("wetrt")[:, indices]
+ftr = ncloader.load_feature_data_2d("ftr")[:, indices]
 
 # Stack the input data arrays then normalise
 feature_data = torch.stack(
