@@ -29,36 +29,18 @@ torch.manual_seed(seed)
 torch.cuda.manual_seed_all(seed)
 
 # Load the target data from file
-ncloader = NetCDFDataLoader(num_timesteps, data_dir=data_dir)
+ncloader = NetCDFDataLoader(num_timesteps, zero_factor=zero_factor, data_dir=data_dir)
 nhsteps = ncloader.load_nhsteps_data()
 max_nhsteps = int(nhsteps.max().item())
 print(f"{max_nhsteps=}")
 target_data = prepare_for_classification(nhsteps)
-
-# Take the indices with non-zero targets and then the same number again of zero targets
-indices = [int(i) for i in nhsteps.nonzero()]
-N = (zero_factor + 1) * len(indices)
-assert len(target_data) > N
-i = 0
-while len(indices) < N:
-    if i not in indices:
-        indices.append(i)
-    i = i + 1
-# indices = indices[N//2:]  # DEBUG (test we can map to zero)
-indices.sort()
-indices = torch.Tensor(indices).to(dtype=torch.int)
-target_data = target_data[indices]
 print(f"Number of data points: {target_data.shape[0]}")
 
 # Load the feature data from file as Torch Tensors and stack
 features_1d = ["stratflag", "zp", "zt", "zq", "cldf", "cldl"]
-feature_data_1d = [
-    features[indices] for features in ncloader.load_feature_data_1d(*features_1d)
-]
+feature_data_1d = ncloader.load_feature_data_1d(*features_1d)
 features_2d = ["prt", "dryrt", "wetrt", "ftr"]
-feature_data_2d = [
-    features[:, indices] for features in ncloader.load_feature_data_2d(*features_2d)
-]
+feature_data_2d = ncloader.load_feature_data_2d(*features_2d)
 feature_data = feature_data_1d
 for features in feature_data_2d:
     feature_data += features
