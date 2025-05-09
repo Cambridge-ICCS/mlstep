@@ -33,6 +33,7 @@ class NetCDFDataLoader:
             raise IOError(errmsg)
         self.data_dir = data_dir
         self._indices = None
+        self._max_nhsteps = None
 
     def subsample_indices(self, nhsteps):
         """
@@ -68,6 +69,20 @@ class NetCDFDataLoader:
             raise RuntimeError(errmsg)
         return self._indices
 
+    @property
+    def max_nhsteps(self):
+        """
+        Get the maximum number of halving steps.
+
+        :returns: The maximum number of halving steps.
+        """
+        if self._max_nhsteps is None:
+            errmsg = (
+                "Max halving steps have not been set. Call load_nhsteps_data() first."
+            )
+            raise RuntimeError(errmsg)
+        return self._max_nhsteps
+
     def load_nhsteps_data(self):
         """
         Load halving steps data from netCDF files.
@@ -82,6 +97,7 @@ class NetCDFDataLoader:
                 nhsteps.append(torch.round(torch.log2(ncsteps)).to(dtype=torch.int))
         nhsteps = torch.hstack(nhsteps)
         self.subsample_indices(nhsteps)
+        self._max_nhsteps = int(nhsteps.max().item())
         return nhsteps[self.indices]
 
     def load_feature_data_1d(self, dtype=torch.float):
