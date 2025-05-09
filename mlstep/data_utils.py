@@ -11,15 +11,21 @@ __all__ = ["NetCDFDataLoader", "prepare_for_classification"]
 class NetCDFDataLoader:
     """Class for handling loading data from NetCDF files."""
 
-    def __init__(self, num_timesteps, zero_factor=3, data_dir="data"):
+    def __init__(
+        self, features_1d, features_2d, num_timesteps, zero_factor=3, data_dir="data"
+    ):
         """
         Initialise the NetCDFDataLoader.
 
+        :param features_1d: List of 1D feature variable names to load.
+        :param features_2d: List of 2D feature variable names to load.
         :param num_timesteps: Number of NetCDF files to load.
         :param zero_factor: Number of zero targets to include for each non-zero target.
         :param data_dir: Directory where the NetCDF files are stored (defaults to
             "data").
         """
+        self.features_1d = features_1d
+        self.features_2d = features_2d
         self.num_timesteps = num_timesteps
         self.zero_factor = zero_factor
         if not os.path.exists(data_dir):
@@ -78,15 +84,14 @@ class NetCDFDataLoader:
         self.subsample_indices(nhsteps)
         return nhsteps[self.indices]
 
-    def load_feature_data_1d(self, *variables, dtype=torch.float):
+    def load_feature_data_1d(self, dtype=torch.float):
         """
         Load feature data corresponding to 1D variable from NetCDF files.
 
-        :param variables: Variable names to load.
         :param dtype: Data type to use.
         """
         data = []
-        for variable in variables:
+        for variable in self.features_1d:
             arr = []
             for i in range(1, self.num_timesteps + 1):
                 with netCDF4.Dataset(f"{self.data_dir}/{variable}_{i}.nc", "r") as nc:
@@ -94,15 +99,14 @@ class NetCDFDataLoader:
             data.append(torch.hstack(arr)[self.indices])
         return data
 
-    def load_feature_data_2d(self, *variables, dtype=torch.float):
+    def load_feature_data_2d(self, dtype=torch.float):
         """
         Load feature data corresponding to 2D variables from NetCDF files.
 
-        :param variable: Variable name to load.
         :param dtype: Data type to use.
         """
         data = []
-        for variable in variables:
+        for variable in self.features_2d:
             arr = []
             for i in range(1, self.num_timesteps + 1):
                 with netCDF4.Dataset(f"{self.data_dir}/{variable}_{i}.nc", "r") as nc:
@@ -111,6 +115,18 @@ class NetCDFDataLoader:
                     )
             data.append(torch.hstack(arr)[:, self.indices])
         return data
+
+    def load_feature_data(self, dtype=torch.float):
+        """
+        Load feature data from NetCDF files.
+
+        :param dtype: Data type to use.
+        :returns: Feature data as a rank-2 tensor.
+        """
+        feature_data = self.load_feature_data_1d(dtype=dtype)
+        for features in self.load_feature_data_2d(dtype=dtype):
+            feature_data += features
+        return torch.stack(feature_data, dim=1)
 
 
 def prepare_for_classification(nhsteps):

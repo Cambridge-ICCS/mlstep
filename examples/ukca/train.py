@@ -11,7 +11,6 @@ from mlstep.net import FCNN
 from mlstep.propagate import propagate
 
 # Set parameters
-data_dir = "data"
 test_size = 0.3
 batch_size = 50
 test_batch_size = batch_size
@@ -28,23 +27,20 @@ random.seed(seed)
 torch.manual_seed(seed)
 torch.cuda.manual_seed_all(seed)
 
-# Load the target data from file
-ncloader = NetCDFDataLoader(num_timesteps, zero_factor=zero_factor, data_dir=data_dir)
+# Load the target and feature data from file
+features_1d = ["stratflag", "zp", "zt", "zq", "cldf", "cldl"]
+features_2d = ["prt", "dryrt", "wetrt", "ftr"]
+data_dir = "data"
+ncloader = NetCDFDataLoader(
+    features_1d, features_2d, num_timesteps, zero_factor=zero_factor, data_dir=data_dir
+)
 nhsteps = ncloader.load_nhsteps_data()
 max_nhsteps = int(nhsteps.max().item())
 print(f"{max_nhsteps=}")
 target_data = prepare_for_classification(nhsteps)
 print(f"Number of data points: {target_data.shape[0]}")
-
-# Load the feature data from file as Torch Tensors and stack
-features_1d = ["stratflag", "zp", "zt", "zq", "cldf", "cldl"]
-feature_data_1d = ncloader.load_feature_data_1d(*features_1d)
-features_2d = ["prt", "dryrt", "wetrt", "ftr"]
-feature_data_2d = ncloader.load_feature_data_2d(*features_2d)
-feature_data = feature_data_1d
-for features in feature_data_2d:
-    feature_data += features
-feature_data = torch.stack(feature_data, dim=1)
+feature_data = ncloader.load_feature_data()
+print(f"Number of scalar features: {feature_data.shape[1]}")
 
 # Normalise the feature data
 tot_n_pnts = feature_data.shape[0]
