@@ -1,5 +1,5 @@
-# Workflow to run code-quality checks on the source
-name: code-quality
+# Workflow to run code quality checks on the source and run the tests
+name: ci-workflow
 
 # When will this workflow run?
 on:
@@ -11,7 +11,7 @@ on:
   pull_request:
     paths:
       - '**.py'
-      - '.github/workflows/code_quality.yaml'
+      - '.github/workflows/ci_workflow.yaml'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -20,8 +20,8 @@ on:
 permissions: {}
 
 jobs:
-  code-quality:
-    name: Run code quality checks
+  ci-workflow:
+    name: Run CI workflow
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -58,3 +58,10 @@ jobs:
         cd ${{ github.workspace }}
         . mlstep_venv/bin/activate
         ruff check --diff ./
+
+    - name: Run tests
+      if: always()
+      run: |
+        cd ${{ github.workspace }}
+        . mlstep_venv/bin/activate
+        pytest -v test/
