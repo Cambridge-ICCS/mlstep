@@ -45,8 +45,11 @@ extend-select = ["D417"]
 
 # Ignore SIM108 (use ternary instead of if-else) as I think it can obscure intent.
 # Ignore RUF002 (ambiguous characters) as it does not allow apostrophes in strings.
-# Ignore S101 (use of `assert` detected) as assertions are used in the test suite.
-ignore = ["SIM108", "RUF002", "S101"]
+ignore = ["SIM108", "RUF002"]
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore S101 (use of assert) in tests
+"**/test/*" = ["S101"]
 
 [tool.ruff.lint.pydocstyle]
 # Use NumPy convention for checking docstrings
