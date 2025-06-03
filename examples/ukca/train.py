@@ -70,31 +70,33 @@ optimizer = torch.optim.Adam(nn.parameters(), lr=lr)
 criterion = torch.nn.CrossEntropyLoss(reduction="sum")
 
 # Train
-train_losses, validation_losses = [], []
+train_losses = []
+val_losses = []
 for epoch in range(1, num_epochs + 1):
     # Training step
     start_time = perf_counter()
-    train_loss, train_frac = propagate(
+    train_loss, train_under, train_over = propagate(
         train_loader, nn, criterion, optimizer, device=device
     )
     mid_time = perf_counter()
     train_time = mid_time - start_time
 
     # Validation step
-    validation_loss, validation_frac = propagate(
+    val_loss, val_under, val_over = propagate(
         validate_loader, nn, criterion, device=device
     )
-    validation_time = perf_counter() - mid_time
+    val_time = perf_counter() - mid_time
 
     # Stash progress
     print(
         f"Epoch {epoch:4d}/{num_epochs:d}"
-        f"  avg loss: {train_loss:.4e} ({validation_loss:.4e})"
-        f"  incorrect: {train_frac:.2f}% ({validation_frac:.2f})%"
-        f"  wallclock: {train_time:.2f}s ({validation_time:.2f}s)"
+        f"  avg loss: {train_loss:.4e} ({val_loss:.4e})"
+        f"  underestimates: {train_under:5.2f}% ({val_under:5.2f})%"
+        f"  overestimates: {train_over:5.2f}% ({val_over:5.2f})%"
+        f"  wallclock: {train_time:5.2f}s ({val_time:5.2f}s)"
     )
     train_losses.append(train_loss)
-    validation_losses.append(validation_loss)
+    val_losses.append(val_loss)
 
     # gradients = torch.tensor([p.grad.norm() for p in nn.parameters()])
     # if gradients.allclose(torch.zeros_like(gradients)):
@@ -103,6 +105,7 @@ for epoch in range(1, num_epochs + 1):
 
     # Save the model and loss progress perodically
     if epoch % 100 == 0:
+        scripted_model = torch.jit.script(nn)
         torch.save(torch.Tensor(train_losses), f"{data_dir}/train_losses.pt")
-        torch.save(torch.Tensor(validation_losses), f"{data_dir}/validation_losses.pt")
-        torch.save(nn.state_dict(), "model.pt")
+        torch.save(torch.Tensor(val_losses), f"{data_dir}/val_losses.pt")
+        scripted_model.save("model.pt")

@@ -44,5 +44,7 @@ def propagate(data_loader, model, loss_fn, optimizer=None, device="cpu"):
             optimizer.step()
 
     # Keep track of the number of wrong predictions
-    num_wrong = (prediction - target).abs().sum() / 2
-    return cumulative_loss / num_batches, 100 * num_wrong / num_batches
+    diff = prediction.argmax(dim=1) - target.argmax(dim=1)
+    underestimates = 100 * len(torch.where(diff < 0)[0]) / num_batches
+    overestimates = 100 * len(torch.where(diff > 0)[0]) / num_batches
+    return cumulative_loss / num_batches, underestimates, overestimates
