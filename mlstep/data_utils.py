@@ -12,7 +12,7 @@ class NetCDFDataLoader:
     """Class for handling loading data from NetCDF files."""
 
     def __init__(
-        self, features_1d, features_2d, num_timesteps, zero_factor=3, data_dir="data"
+        self, features_1d, features_2d, num_timesteps, zero_factor=None, data_dir="data"
     ):
         """
         Initialise the NetCDFDataLoader.
@@ -21,6 +21,7 @@ class NetCDFDataLoader:
         :param features_2d: List of 2D feature variable names to load.
         :param num_timesteps: Number of NetCDF files to load.
         :param zero_factor: Number of zero targets to include for each non-zero target.
+            If `None` then zeroes will not be discarded.
         :param data_dir: Directory where the NetCDF files are stored (defaults to
             "data").
         """
@@ -46,6 +47,9 @@ class NetCDFDataLoader:
 
         :param nhsteps: Halving steps data as rank-1 tensor.
         """
+        if self.zero_factor is None:
+            self._indices = torch.Tensor(range(len(nhsteps))).to(dtype=torch.int)
+            return
         indices = [int(i) for i in nhsteps.nonzero()]
         N = (self.zero_factor + 1) * len(indices)
         if len(nhsteps) < N:
