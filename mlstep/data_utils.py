@@ -80,25 +80,25 @@ class NetCDFDataLoader:
         :returns: The number of halving steps for each grid-box and timestep as a binary
             matrix (rank-2 tensor).
         """
-        nhsteps = []
-        for i in range(1, self.num_timesteps + 1):
-            with netCDF4.Dataset(f"{self.data_dir}/ncsteps_{i}.nc", "r") as nc:
-                ncsteps = torch.Tensor(nc.variables["ncsteps"][:])
-                nhsteps.append(torch.log2(ncsteps).round().int())
-        nhsteps = torch.hstack(nhsteps)
+        nhsteps = torch.hstack(
+            [
+                torch.log2(self._read_nc("ncsteps", timestep, 1)).round().int()
+                for timestep in range(1, self.num_timesteps + 1)
+            ]
+        )
         self._max_nhsteps = int(nhsteps.max().item())
         return self._prepare_for_classification(nhsteps)
 
-    def _read_feature(self, feature, timestep, dim):
+    def _read_nc(self, variable, timestep, dim):
         """
         Read a feature from a feature data NetCDF file.
 
         :param dim: Number of dimensions in the feature data.
         :returns: Torch tensor containing the feature data
         """
-        with netCDF4.Dataset(f"{self.data_dir}/{feature}_{timestep}.nc", "r") as nc:
+        with netCDF4.Dataset(f"{self.data_dir}/{variable}_{timestep}.nc", "r") as nc:
             return torch.Tensor(
-                nc.variables[feature][:] if dim == 1 else nc.variables[feature][:][:]
+                nc.variables[variable][:] if dim == 1 else nc.variables[variable][:][:]
             )
 
     def _load_feature_data(self, dim, dtype=torch.float):
@@ -113,7 +113,7 @@ class NetCDFDataLoader:
         return [
             torch.hstack(
                 [
-                    self._read_feature(feature, timestep, dim).to(dtype=dtype)
+                    self._read_nc(feature, timestep, dim).to(dtype=dtype)
                     for timestep in range(1, self.num_timesteps + 1)
                 ]
             )
@@ -131,6 +131,7 @@ class NetCDFDataLoader:
         :param dtype: Data type to use.
         :returns: Feature data as a rank-2 tensor.
         """
+        # TODO: Refactor this method
         feature_data = self._load_feature_data(1, dtype=dtype)
         self._features = self._features_1d
         for i, features in enumerate(self._load_feature_data(2, dtype=dtype)):
