@@ -70,18 +70,11 @@ def test_load_target_data(data_dir, num_timesteps):
     assert target_data.shape == (num_data_points, loader.max_nhsteps + 1)
 
 
-def test_load_feature_data_1d(data_dir):
-    """Test loading 1D feature data."""
-    loader = constructor(data_dir)
-    feature_data = loader.load_feature_data_1d()
-    assert len(feature_data) == len(loader.features_1d)
-
-
-def test_load_feature_data_2d(data_dir):
-    """Test loading 2D feature data."""
-    loader = constructor(data_dir)
-    feature_data = loader.load_feature_data_2d()
-    assert len(feature_data) == len(loader.features_2d)
+def test_features_error(data_dir):
+    """Check an error is raised if the features property is accessed prematurely."""
+    msg = "Features have not been loaded. Call load_feature_data() first."
+    with pytest.raises(RuntimeError, match=re.escape(msg)):
+        _ = constructor(data_dir).features
 
 
 def test_load_feature_data(data_dir, num_timesteps):
@@ -95,7 +88,7 @@ def test_load_feature_data(data_dir, num_timesteps):
 
 
 def test_max_nhsteps_error(data_dir):
-    """Test the maximum number of halving steps calculation."""
+    """Check an error is raised if the max_nhsteps property is accessed prematurely."""
     msg = "Max halving steps have not been set. Call load_target_data() first."
     with pytest.raises(RuntimeError, match=re.escape(msg)):
         _ = constructor(data_dir).max_nhsteps
