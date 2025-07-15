@@ -1,6 +1,7 @@
 """Unit tests for the data_utils module."""
 
 import os
+import re
 
 import pytest
 
@@ -71,6 +72,13 @@ def test_load_feature_data(data_dir, num_timesteps):
     loader = constructor(data_dir, num_timesteps=num_timesteps)
     feature_data = loader.load_feature_data()
     assert feature_data.shape == (num_data_points, num_features)
+
+
+def test_max_nhsteps_error(data_dir):
+    """Test the maximum number of halving steps calculation."""
+    msg = "Max halving steps have not been set. Call load_target_data() first."
+    with pytest.raises(RuntimeError, match=re.escape(msg)):
+        _ = constructor(data_dir).max_nhsteps
 
 
 def test_max_nhsteps(data_dir, num_timesteps):
