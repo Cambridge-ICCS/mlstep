@@ -30,6 +30,26 @@ def constructor(data_dir, num_timesteps=3):
     )
 
 
+def test_netcdf_files_exist(data_dir):
+    """Test that the NetCDF files exist in the data directory."""
+    for timestep in [1, 2, 3]:
+        target_file = os.path.join(data_dir, f"ncsteps_{timestep}.nc")
+        if not os.path.isfile(target_file):
+            io_err = (
+                f"NetCDF target data file '{target_file}' does not exist. Did you"
+                " generate the NetCDF files for the tests?"
+            )
+            raise IOError(io_err)
+        for dim in ["1d", "2d"]:
+            feature_file = os.path.join(data_dir, f"test_feature{dim}_{timestep}.nc")
+            if not os.path.isfile(feature_file):
+                io_err = (
+                    f"NetCDF feature data file '{feature_file}' does not exist. Did you"
+                    " generate the NetCDF files for the tests?"
+                )
+                raise IOError(io_err)
+
+
 def test_init_valid_data_dir(data_dir):
     """Test initialization with a valid data directory."""
     assert constructor(data_dir).data_dir == data_dir
