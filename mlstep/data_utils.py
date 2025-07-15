@@ -32,14 +32,6 @@ class NetCDFDataLoader:
         self._max_nhsteps = None
 
     @property
-    def features(self):
-        """:returns: List of feature variable names."""
-        if self._features is None:
-            errmsg = "Features have not been loaded. Call load_feature_data() first."
-            raise RuntimeError(errmsg)
-        return self._features
-
-    @property
     def max_nhsteps(self):
         """:returns: The maximum number of halving steps."""
         if self._max_nhsteps is None:
@@ -49,21 +41,25 @@ class NetCDFDataLoader:
             raise RuntimeError(errmsg)
         return self._max_nhsteps
 
-    def _prepare_for_classification(self, nhsteps):
-        """
-        Prepare halving steps data for use in a classification problem.
+    @property
+    def features(self):
+        """:returns: List of feature variable names."""
+        if self._features is None:
+            errmsg = "Features have not been loaded. Call load_feature_data() first."
+            raise RuntimeError(errmsg)
+        return self._features
 
-        This involves reformating as a binary matrix, where entry :math:`(i,j)` is one
-        if entry i of nhsteps takes the value :math:`2^j` and zero otherwise.
-
-        :param nhsteps: Tensor of halving steps data as rank-1 tensor.
-        :returns: Halving steps data in binary matrix format (rank-2).
+    def _read_nc(self, variable, timestep, dim):
         """
-        max_nhsteps = int(nhsteps.max().item())
-        target_data = torch.zeros((len(nhsteps), max_nhsteps + 1), dtype=torch.int)
-        for i, nhstep in enumerate(nhsteps):
-            target_data[i, nhstep] = 1
-        return target_data
+        Read a feature from a feature data NetCDF file.
+
+        :param dim: Number of dimensions in the feature data.
+        :returns: Torch tensor containing the feature data
+        """
+        with netCDF4.Dataset(f"{self.data_dir}/{variable}_{timestep}.nc", "r") as nc:
+            return torch.Tensor(
+                nc.variables[variable][:] if dim == 1 else nc.variables[variable][:][:]
+            )
 
     def load_target_data(self):
         """
@@ -80,30 +76,27 @@ class NetCDFDataLoader:
         :returns: The number of halving steps for each grid-box and timestep as a binary
             matrix (rank-2 tensor).
         """
+        # Read the eventual number of timesteps from the NetCDF files and convert them
+        # to numbers of halving steps
         nhsteps = torch.hstack(
             [
                 torch.log2(self._read_nc("ncsteps", timestep, 1)).round().int()
                 for timestep in range(1, self.num_timesteps + 1)
             ]
         )
+
+        # Stash the maximum number of halving steps
         self._max_nhsteps = int(nhsteps.max().item())
-        return self._prepare_for_classification(nhsteps)
 
-    def _read_nc(self, variable, timestep, dim):
-        """
-        Read a feature from a feature data NetCDF file.
-
-        :param dim: Number of dimensions in the feature data.
-        :returns: Torch tensor containing the feature data
-        """
-        with netCDF4.Dataset(f"{self.data_dir}/{variable}_{timestep}.nc", "r") as nc:
-            return torch.Tensor(
-                nc.variables[variable][:] if dim == 1 else nc.variables[variable][:][:]
-            )
+        # Prepare the halving steps data for classification
+        target_data = torch.zeros((len(nhsteps), self.max_nhsteps + 1), dtype=torch.int)
+        for i, nhstep in enumerate(nhsteps):
+            target_data[i, nhstep] = 1
+        return target_data
 
     def _load_feature_data(self, dim, dtype=torch.float):
         """
-        Load feature data from NetCDF files.
+        Load feature data from NetCDF files for a given dimension.
 
         :param dim: Number of dimensions in the feature data.
         :param dtype: Data type to use.
