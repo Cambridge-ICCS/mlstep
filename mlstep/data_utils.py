@@ -27,6 +27,7 @@ class NetCDFDataLoader:
         """
         self.features_1d = features_1d
         self.features_2d = features_2d
+        self.features = None
         self.num_timesteps = num_timesteps
         self.zero_factor = zero_factor
         if not os.path.exists(data_dir):
@@ -168,6 +169,9 @@ class NetCDFDataLoader:
         :returns: Feature data as a rank-2 tensor.
         """
         feature_data = self.load_feature_data_1d(dtype=dtype)
-        for features in self.load_feature_data_2d(dtype=dtype):
+        self.features = self.features_1d
+        for i, features in enumerate(self.load_feature_data_2d(dtype=dtype)):
+            feature_name = self.features_2d[i]
+            self.features += [f"{feature_name}_{j}" for j in range(len(features))]
             feature_data += features
         return torch.stack(feature_data, dim=1)
