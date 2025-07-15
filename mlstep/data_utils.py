@@ -124,11 +124,15 @@ class NetCDFDataLoader:
         :param dtype: Data type to use.
         :returns: Feature data as a rank-2 tensor.
         """
-        # TODO: Refactor this method
+        # Load 1D feature data
         feature_data = self._load_feature_data(1, dtype=dtype)
         self._features = self._features_1d
-        for i, features in enumerate(self._load_feature_data(2, dtype=dtype)):
-            feature_name = self._features_2d[i]
-            self._features += [f"{feature_name}_{j}" for j in range(len(features))]
+
+        # Load 2D feature data and update features list
+        feature_data_2d = self._load_feature_data(2, dtype=dtype)
+        for feature_name, features in zip(self._features_2d, feature_data_2d):
+            self._features.extend(f"{feature_name}_{j}" for j in range(len(features)))
             feature_data += features
+
+        # Stack all feature data into a rank-2 tensor
         return torch.stack(feature_data, dim=1)
