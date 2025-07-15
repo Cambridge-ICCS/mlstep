@@ -8,9 +8,6 @@ import torch
 __all__ = ["NetCDFDataLoader"]
 
 
-# TODO: Further simplification
-
-
 class NetCDFDataLoader:
     """Class for handling loading data from NetCDF files."""
 
@@ -92,6 +89,18 @@ class NetCDFDataLoader:
         self._max_nhsteps = int(nhsteps.max().item())
         return self._prepare_for_classification(nhsteps)
 
+    def _read_feature(self, feature, timestep, dim):
+        """
+        Read a feature from a feature data NetCDF file.
+
+        :param dim: Number of dimensions in the feature data.
+        :returns: Torch tensor containing the feature data
+        """
+        with netCDF4.Dataset(f"{self.data_dir}/{feature}_{timestep}.nc", "r") as nc:
+            return torch.Tensor(
+                nc.variables[feature][:] if dim == 1 else nc.variables[feature][:][:]
+            )
+
     def _load_feature_data(self, dim, dtype=torch.float):
         """
         Load feature data from NetCDF files.
@@ -101,21 +110,15 @@ class NetCDFDataLoader:
         :returns: List of tensors containing feature data.
         """
         assert dim in (1, 2), "Only feature data with 1 or 2 dimensions are supported."
-        data = []
-        for feature in self._features_1d if dim == 1 else self._features_2d:
-            arr = []
-            for i in range(1, self.num_timesteps + 1):
-                with netCDF4.Dataset(f"{self.data_dir}/{feature}_{i}.nc", "r") as nc:
-                    if dim == 1:
-                        arr.append(
-                            torch.Tensor(nc.variables[feature][:]).to(dtype=dtype)
-                        )
-                    else:
-                        arr.append(
-                            torch.Tensor(nc.variables[feature][:][:]).to(dtype=dtype)
-                        )
-            data.append(torch.hstack(arr))
-        return data
+        return [
+            torch.hstack(
+                [
+                    self._read_feature(feature, timestep, dim).to(dtype=dtype)
+                    for timestep in range(1, self.num_timesteps + 1)
+                ]
+            )
+            for feature in (self._features_1d if dim == 1 else self._features_2d)
+        ]
 
     def load_feature_data(self, dtype=torch.float):
         """
