@@ -7,18 +7,24 @@ import pytest
 from mlstep.data_utils import NetCDFDataLoader
 
 
+@pytest.fixture(params=[1, 2, 3])
+def num_timesteps(request):
+    """Fixture to provide a range of timesteps for testing."""
+    return request.param
+
+
 @pytest.fixture
 def data_dir():
     """Fixture to provide a valid data directory for testing."""
     return os.path.join(os.path.dirname(__file__), "data")
 
 
-def constructor(data_dir):
+def constructor(data_dir, num_timesteps=3):
     """Create a NetCDFDataLoader instance."""
     return NetCDFDataLoader(
         features_1d=["test_feature1d"],
         features_2d=["test_feature2d"],
-        num_timesteps=3,
+        num_timesteps=num_timesteps,
         data_dir=data_dir,
     )
 
@@ -34,11 +40,12 @@ def test_init_invalid_data_dir():
         constructor("invalid_dir")
 
 
-def test_load_target_data(data_dir):
+def test_load_target_data(data_dir, num_timesteps):
     """Test loading target data."""
-    loader = constructor(data_dir)
+    num_points = 10  # Grid size in all input files
+    loader = constructor(data_dir, num_timesteps=num_timesteps)
     target_data = loader.load_target_data()
-    num_data_points = 3 * 10  # 3 timesteps * 10 spatial points
+    num_data_points = num_timesteps * num_points
     assert target_data.shape == (num_data_points, loader.max_nhsteps + 1)
 
 
@@ -56,10 +63,18 @@ def test_load_feature_data_2d(data_dir):
     assert len(feature_data) == len(loader.features_2d)
 
 
-def test_load_feature_data(data_dir):
+def test_load_feature_data(data_dir, num_timesteps):
     """Test loading all feature data."""
-    loader = constructor(data_dir)
-    feature_data = loader.load_feature_data()
-    num_data_points = 3 * 10  # 3 timesteps * 10 spatial points
+    num_points = 10  # Grid size in all input files
+    num_data_points = num_timesteps * num_points
     num_features = 1 + 3  # 1D feature + 3-component 2D feature
+    loader = constructor(data_dir, num_timesteps=num_timesteps)
+    feature_data = loader.load_feature_data()
     assert feature_data.shape == (num_data_points, num_features)
+
+
+def test_max_nhsteps(data_dir, num_timesteps):
+    """Test the maximum number of halving steps calculation."""
+    loader = constructor(data_dir, num_timesteps=num_timesteps)
+    loader.load_target_data()
+    assert loader.max_nhsteps == num_timesteps + 2
