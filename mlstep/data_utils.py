@@ -29,7 +29,7 @@ class NetCDFDataLoader:
         self.features = None
         self.num_timesteps = num_timesteps
         if not os.path.exists(data_dir):
-            errmsg = f"Data directory {data_dir} does not exist."
+            errmsg = f"Data directory '{data_dir}' does not exist."
             raise IOError(errmsg)
         self.data_dir = data_dir
         self._max_nhsteps = None
