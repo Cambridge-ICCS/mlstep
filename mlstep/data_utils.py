@@ -80,7 +80,7 @@ class NetCDFDataLoader:
         for i in range(1, self.num_timesteps + 1):
             with netCDF4.Dataset(f"{self.data_dir}/ncsteps_{i}.nc", "r") as nc:
                 ncsteps = torch.Tensor(nc.variables["ncsteps"][:])
-                nhsteps.append(torch.round(torch.log2(ncsteps)).to(dtype=torch.int))
+                nhsteps.append(torch.log2(ncsteps).round().int())
         nhsteps = torch.hstack(nhsteps)
         self._max_nhsteps = int(nhsteps.max().item())
         return self._prepare_for_classification(nhsteps)
