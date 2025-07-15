@@ -35,33 +35,6 @@ def test_init_invalid_data_dir():
         )
 
 
-def test_subsample_indices_zero_factor(data_dir):
-    """Test subsampling indices with zero_factor=None."""
-    loader = NetCDFDataLoader(
-        features_1d=["test_feature1d"],
-        features_2d=["test_feature2d"],
-        num_timesteps=3,
-        data_dir=data_dir,
-    )
-    nhsteps = torch.tensor([0, 1, 2, 3])
-    loader._subsample_indices(nhsteps)
-    assert torch.equal(loader.indices, torch.tensor([0, 1, 2, 3], dtype=torch.int))
-
-
-def test_subsample_indices_with_zero_factor(data_dir):
-    """Test subsampling indices with a non-zero zero_factor."""
-    loader = NetCDFDataLoader(
-        features_1d=["test_feature1d"],
-        features_2d=["test_feature2d"],
-        num_timesteps=3,
-        zero_factor=1,
-        data_dir=data_dir,
-    )
-    nhsteps = torch.tensor([0, 0, 0, 1])
-    loader._subsample_indices(nhsteps)
-    assert len(loader.indices) == 2
-
-
 def test_load_target_data(data_dir):
     """Test loading target data."""
     loader = NetCDFDataLoader(
@@ -73,7 +46,6 @@ def test_load_target_data(data_dir):
     # Mock the NetCDF file reading
     torch.manual_seed(0)
     nhsteps = torch.randint(1, 4, (10,))
-    loader._subsample_indices(nhsteps)
     loader._max_nhsteps = int(nhsteps.max().item())
     target_data = loader._prepare_for_classification(nhsteps)
     assert target_data.shape == (len(nhsteps), loader.max_nhsteps + 1)
