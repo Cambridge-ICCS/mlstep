@@ -56,14 +56,15 @@ class NetCDFDataLoader:
         :param dim: Number of dimensions in the feature data.
         :returns: Torch tensor containing the feature data
         """
-        with netCDF4.Dataset(f"{self.data_dir}/{variable}_{timestep}.nc", "r") as nc:
+        filename = os.path.join(self.data_dir, f"{variable}_{timestep}.nc")
+        with netCDF4.Dataset(filename, "r") as nc:
             return torch.Tensor(
                 nc.variables[variable][:] if dim == 1 else nc.variables[variable][:][:]
             )
 
     def load_target_data(self):
         """
-        Load halving steps data from netCDF files.
+        Load halving steps data from NetCDF files.
 
         The halving steps data are converted to a binary matrix format, where entry
         :math:`(i,j)` is one if entry i of nhsteps takes the value :math:`2^j` and zero
@@ -72,7 +73,6 @@ class NetCDFDataLoader:
         This method has the side-effect of determining the `max_nhsteps` attribute for
         the maximum number of halving steps across all target data.
 
-        :param num_timesteps: Number of NetCDF files to load.
         :returns: The number of halving steps for each grid-box and timestep as a binary
             matrix (rank-2 tensor).
         """
