@@ -49,10 +49,6 @@ extend-select = ["D417"]
 # Ignore PLR0913 (too many arguments) as it is too strict.
 ignore = ["SIM108", "RUF002", "S101", "PLR0913"]
 
-[tool.ruff.lint.per-file-ignores]
-# Ignore S101 (use of assert) in tests
-"**/test/*" = ["S101"]
-
 [tool.ruff.lint.pydocstyle]
 # Use NumPy convention for checking docstrings
 convention = "numpy"
