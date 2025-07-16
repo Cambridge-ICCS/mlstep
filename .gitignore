@@ -1,2 +1,11 @@
+# Subdirectories
 mlstep.egg-info/
 __pycache__/
+CMakeFiles/
+
+# Specific files
+CMakeCache.txt
+Makefile
+
+# File extensions
+*.cmake
