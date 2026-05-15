@@ -23,22 +23,22 @@ class FCNN(nn.Module):
     class.
     """
 
-    def __init__(self, input_size, max_nhsteps=5, hidden_size=50):
+    def __init__(self, *input_sizes, max_nhsteps=5, hidden_size=50):
         """
         Initialise the FCNN.
 
-        :param input_size: Size of the input vector.
+        :param input_sizes: Size of each input vector.
         :param max_nhsteps: Maximum permissible number of halving steps (defaults to 5).
         :param hidden_size: Size of the hidden layer (defaults to 50).
         """
         super().__init__()
-        self.hidden = nn.Linear(input_size, hidden_size)
+        self.hidden = nn.Linear(sum(input_sizes), hidden_size)
         self.output = nn.Linear(hidden_size, max_nhsteps + 1)
 
-    def forward(self, x):
+    def forward(self, *x):
         """
         Forward method for the FCNN.
 
-        :param x: input vector for the model
+        :param x: input vectors for the model
         """
-        return F.softmax(self.output(F.relu(self.hidden(x))), dim=1)
+        return F.softmax(self.output(F.relu(self.hidden(torch.cat(x)))), dim=1)
