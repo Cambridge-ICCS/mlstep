@@ -1,5 +1,6 @@
 """Module containing neural network architectures."""
 
+import torch
 import torch.nn.functional as F
 from torch import nn
 
@@ -32,13 +33,16 @@ class FCNN(nn.Module):
         :param hidden_size: Size of the hidden layer (defaults to 50).
         """
         super().__init__()
-        self.hidden = nn.Linear(sum(input_sizes), hidden_size)
-        self.output = nn.Linear(hidden_size, max_nhsteps + 1)
+        # self.hidden = nn.Linear(sum(input_sizes), hidden_size)
+        # self.output = nn.Linear(hidden_size, max_nhsteps + 1)
+        self.output = nn.Linear(sum(input_sizes), max_nhsteps + 1)
 
-    def forward(self, *x):
+    def forward(self, scalar, ftr, dryrt, wetrt, prt, rchet):
         """
         Forward method for the FCNN.
 
         :param x: input vectors for the model
         """
-        return F.softmax(self.output(F.relu(self.hidden(torch.cat(x)))), dim=1)
+        x = torch.hstack((scalar, ftr, dryrt, wetrt, prt, rchet))
+        # return F.softmax(self.output(F.relu(self.hidden(x))), dim=1)
+        return F.softmax(self.output(x), dim=1)
