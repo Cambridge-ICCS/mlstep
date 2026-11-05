@@ -35,9 +35,7 @@ class NetCDFDataLoader:
     def max_nhsteps(self):
         """:returns: The maximum number of halving steps."""
         if self._max_nhsteps is None:
-            errmsg = (
-                "Max halving steps have not been set. Call load_target_data() first."
-            )
+            errmsg = "Max halving steps have not been set. Call load_target_data() first."
             raise RuntimeError(errmsg)
         return self._max_nhsteps
 
@@ -58,9 +56,7 @@ class NetCDFDataLoader:
         """
         filename = os.path.join(self.data_dir, f"{variable}_{timestep}.nc")
         with netCDF4.Dataset(filename, "r") as nc:
-            return torch.Tensor(
-                nc.variables[variable][:] if dim == 1 else nc.variables[variable][:][:]
-            )
+            return torch.Tensor(nc.variables[variable][:] if dim == 1 else nc.variables[variable][:][:])
 
     def load_target_data(self):
         """
@@ -105,10 +101,7 @@ class NetCDFDataLoader:
         assert dim in (1, 2), "Only feature data with 1 or 2 dimensions are supported."
         return [
             torch.hstack(
-                [
-                    self._read_nc(feature, timestep, dim).to(dtype=dtype)
-                    for timestep in range(1, self.num_timesteps + 1)
-                ]
+                [self._read_nc(feature, timestep, dim).to(dtype=dtype) for timestep in range(1, self.num_timesteps + 1)]
             )
             for feature in (self._features_1d if dim == 1 else self._features_2d)
         ]
