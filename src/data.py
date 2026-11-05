@@ -582,9 +582,7 @@ def load_labels(data_dir: Path, timesteps: tuple[int, ...]) -> np.ndarray:
     labels = np.empty(len(steps) * rows, dtype=np.int64)
     for position, timestep in enumerate(steps):
         # Fill the final array directly instead of keeping every timestep plus a copy.
-        labels[position * rows : (position + 1) * rows] = halving_labels(
-            load_variable(data_dir, "ncsteps", timestep)
-        )
+        labels[position * rows : (position + 1) * rows] = halving_labels(load_variable(data_dir, "ncsteps", timestep))
     return labels
 
 

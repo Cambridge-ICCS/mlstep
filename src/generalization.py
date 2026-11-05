@@ -217,7 +217,12 @@ def evaluate_locked_timesteps(
     for timestep in LOCKED_TIMESTEPS:
         raw_features, labels = load_timesteps(Path(data_dir), (timestep,), FEATURES)
         probabilities, detector = predict_joint_probabilities(
-            model, raw_features, device, batch_size, precision, preprocessor=preprocessor,
+            model,
+            raw_features,
+            device,
+            batch_size,
+            precision,
+            preprocessor=preprocessor,
         )
         report = evaluate_probabilities(probabilities, labels, detector)
         reports.append(report)
@@ -229,12 +234,14 @@ def evaluate_locked_timesteps(
         # here and calculate rates once, across the entire held-out period.
         map_actions = probabilities.argmax(axis=1)
         map_confusion += np.bincount(
-            labels * N_CLASSES + map_actions, minlength=N_CLASSES**2,
+            labels * N_CLASSES + map_actions,
+            minlength=N_CLASSES**2,
         ).reshape(N_CLASSES, N_CLASSES)
         if threshold is not None:
             actions = actions_at_threshold(probabilities, detector, threshold)
             confusion += np.bincount(
-                labels * N_CLASSES + actions, minlength=N_CLASSES**2,
+                labels * N_CLASSES + actions,
+                minlength=N_CLASSES**2,
             ).reshape(N_CLASSES, N_CLASSES)
             del actions
         # Otherwise the previous timestep remains alive while the next loads.

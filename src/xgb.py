@@ -266,7 +266,11 @@ def prepare_targets(args: argparse.Namespace) -> Path:
         if not np.array_equal(raw_y, labels[offset:stop]):
             raise ValueError(f"raw labels at t{timestep} do not match the neural cache")
         predict_responses(
-            booster, raw, teacher["negative_log_correction"], args.batch_size, out=output[offset:stop],
+            booster,
+            raw,
+            teacher["negative_log_correction"],
+            args.batch_size,
+            out=output[offset:stop],
         )
         offset = stop
         # Release this timestep before allocating the next raw feature matrix.
