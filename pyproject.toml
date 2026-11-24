@@ -1,6 +1,12 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "mlstep"
 version = "0.1"
+description = "Research pipelines for UKCA timestep-halving prediction"
+requires-python = ">=3.10"
 authors = [
   {name = "Joe Wallwork", email="jw2423@cam.ac.uk" },
 ]
@@ -9,15 +15,23 @@ maintainers = [
 ]
 readme = "README.md"
 license = { file = "LICENSE" }
-keywords = ["python", "machine-learning", "timstep"]
+keywords = ["python", "machine-learning", "timestep"]
 classifiers = [
 	"Development Status :: 4 - Beta",
 	"Programming Language :: Python",
 ]
 
-dependencies = ["netCDF4", "numpy", "torch"]
+dependencies = [
+    "netCDF4",
+    "numpy>=1.22",
+    "scikit-learn",
+    "torch>=2.3",
+    "xarray",
+]
+
 [project.optional-dependencies]
 dev = ["pytest", "ruff"]
+xgb = ["xgboost>=3.0,<4"]
 
 [project.urls]
 Repository = "https://github.com/Cambridge-ICCS/mlstep"
